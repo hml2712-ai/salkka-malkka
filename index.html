@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#FF6F0F">
+<meta name="description" content="중고 시세 조회, 꿀매물 알림, 위험 알바 판독, 아낀 돈 가계부를 한 화면에서. 살까말까.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="살까말까">
+<meta name="application-name" content="살까말까">
+<meta property="og:title" content="살까말까 · 중고 시세 · 꿀매물 알림 · 알바 판독">
+<meta property="og:description" content="중고는 시세부터. 꿀매물은 알림으로. 알바는 위험 신호까지 한 번에 확인하세요.">
+<meta property="og:image" content="icon-512.png">
+<meta property="og:type" content="website">
+<title>살까말까 · 중고 시세 · 꿀매물 알림 · 알바 판독</title>
+<style>
+  :root{
+    --orange:#FF6F0F;
+    --orange-2:#FF8A3D;
+    --orange-soft:#FFF2E8;
+    --mint:#12B886;
+    --mint-2:#20C997;
+    --mint-soft:#E7F8F1;
+    --red:#F04452;
+    --red-soft:#FFEDEF;
+    --yellow:#F5A623;
+    --yellow-soft:#FFF6E5;
+    --ink:#191F28;
+    --ink-2:#4E5968;
+    --ink-3:#8B95A1;
+    --ink-4:#B0B8C1;
+    --line:#EEF1F4;
+    --line-2:#E5E8EB;
+    --bg:#F5F6F8;
+    --white:#fff;
+    --r-lg:22px;
+    --r-md:16px;
+    --r-sm:12px;
+    --shadow:0 2px 10px rgba(25,31,40,.045);
+    --shadow-2:0 8px 28px rgba(25,31,40,.09);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    word-break:keep-all;
+  }
+  button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;font-size:inherit;}
+  input,textarea,select{font-family:inherit;font-size:16px;color:var(--ink);}
+  h1,h2,h3,h4,p{margin:0;}
+  ul{margin:0;padding:0;list-style:none;}
+
+  /* ---------- phone frame ---------- */
+  .phone{
+    width:100%;
+    max-width:430px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    background:var(--white);
+    position:relative;
+    overflow-x:hidden;
+  }
+  @media (min-width:520px){
+    body{background:linear-gradient(180deg,#EDF0F4 0%,#E3E7EC 100%);padding:22px 0;}
+    .phone{
+      min-height:calc(100vh - 44px);
+      border-radius:32px;
+      box-shadow:0 18px 60px rgba(25,31,40,.16);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.9);
+    }
+  }
+
+  /* ---------- app bar ---------- */
+  .appbar{
+    position:sticky;top:0;z-index:30;
+    display:flex;align-items:center;gap:10px;
+    padding:14px 18px 10px;
+    background:rgba(255,255,255,.93);
+    backdrop-filter:saturate(180%) blur(14px);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);
+  }
+  .logo{
+    width:38px;height:38px;flex:0 0 38px;
+    border-radius:12px;
+    background:linear-gradient(140deg,#FFF1E6,#FFE3CE);
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;
+    box-shadow:inset 0 0 0 1px rgba(255,111,15,.12);
+    overflow:hidden;
+  }
+  .logo img{width:100%;height:100%;display:block;object-fit:cover;}
+  .brand-txt{min-width:0;}
+  .brand-txt b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px;line-height:1.2;}
+  .brand-txt span{display:block;font-size:11px;color:var(--ink-3);font-weight:500;letter-spacing:-.3px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* 좁은 화면에서는 여백만 줄여 부제가 한 줄에 들어가게 한다 */
+  @media (max-width:400px){
+    .appbar{padding:14px 15px 10px;gap:9px;}
+  }
+  @media (max-width:359px){
+    .brand-txt span{font-size:10.4px;}
+  }
+  .avatar{
+    margin-left:auto;
+    width:36px;height:36px;border-radius:50%;
+    background:var(--mint-soft);
+    color:#0B8A66;font-weight:800;font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(18,184,134,.16);
+  }
+
+  /* ---------- layout ---------- */
+  main{flex:1;padding:4px 18px 18px;}
+  .panel{display:none;animation:panelIn .26s ease both;}
+  .panel.on{display:block;}
+  @keyframes panelIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    border-radius:var(--r-lg);
+    padding:20px 20px 18px;
+    background:linear-gradient(135deg,#FFF6EE 0%,#F2FBF7 100%);
+    box-shadow:inset 0 0 0 1px rgba(25,31,40,.035);
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .hero.mint{background:linear-gradient(135deg,#EFFAF5 0%,#F6F4FF 100%);}
+  .hero.money{background:linear-gradient(135deg,#F1FBF6 0%,#FFF7EC 100%);}
+  .hero::after{
+    content:"";position:absolute;right:-30px;top:-34px;width:120px;height:120px;border-radius:50%;
+    background:radial-gradient(circle at 50% 50%,rgba(255,111,15,.13),rgba(255,111,15,0) 70%);
+  }
+  .hero.mint::after{background:radial-gradient(circle at 50% 50%,rgba(18,184,134,.14),rgba(18,184,134,0) 70%);}
+  .hero h2{position:relative;font-size:20px;font-weight:800;letter-spacing:-.6px;line-height:1.35;}
+  .hero p{position:relative;margin-top:6px;font-size:13px;color:var(--ink-2);letter-spacing:-.3px;}
+  .hero .badge-row{position:relative;display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+  .pill{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:-.2px;
+    background:rgba(255,255,255,.85);color:var(--ink-2);
+    box-shadow:inset 0 0 0 1px rgba(25,31,40,.05);
+  }
+  .pill.orange{color:#D2570B;background:#fff;box-shadow:inset 0 0 0 1px rgba(255,111,15,.2);}
+  .pill.mint{color:#0B8A66;background:#fff;box-shadow:inset 0 0 0 1px rgba(18,184,134,.2);}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--white);
+    border-radius:var(--r-lg);
+    padding:18px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .card.tight{padding:16px 16px 18px;}
+  .card-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .card-title h3{font-size:15px;font-weight:800;letter-spacing:-.4px;}
+  .card-title .mini{font-size:11.5px;color:var(--ink-3);font-weight:600;}
+
+  /* ---------- upload ---------- */
+  .uploader{
+    display:flex;align-items:center;gap:12px;
+    width:100%;
+    padding:14px;
+    border-radius:var(--r-md);
+    background:#FFF8F2;
+    border:1.5px dashed #FFD3B0;
+    text-align:left;
+    transition:transform .12s ease,background .2s ease;
+  }
+  .uploader:active{transform:scale(.985);background:#FFF1E5;}
+  .uploader .u-ico{
+    width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    box-shadow:0 1px 4px rgba(255,111,15,.14);
+  }
+  .uploader b{display:block;font-size:13.5px;font-weight:800;letter-spacing:-.3px;}
+  .uploader span{display:block;font-size:11.5px;color:var(--ink-3);margin-top:1px;}
+  .uploader .u-add{margin-left:auto;font-size:18px;color:var(--orange);font-weight:700;}
+  .uploader.has-file{background:#fff;border-style:solid;border-color:var(--line-2);}
+  .thumb{
+    width:56px;height:56px;flex:0 0 56px;border-radius:12px;object-fit:cover;display:block;
+    box-shadow:0 1px 6px rgba(25,31,40,.12);
+  }
+  .u-ico .thumb{width:42px;height:42px;flex:0 0 42px;border-radius:11px;}
+  .demo-note{
+    margin-top:10px;font-size:11.5px;color:var(--ink-3);line-height:1.45;
+    padding:9px 11px;border-radius:10px;background:#F8F9FA;
+  }
+  .demo-note b{color:var(--ink-2);}
+
+  /* ---------- form ---------- */
+  .field{margin-top:14px;}
+  .field label{display:block;font-size:12px;font-weight:800;color:var(--ink-2);letter-spacing:-.2px;margin-bottom:7px;}
+  .input-wrap{position:relative;display:flex;align-items:center;}
+  .input{
+    width:100%;
+    padding:14px 15px;
+    border-radius:14px;
+    background:#F2F4F6;
+    border:1.5px solid transparent;
+    outline:none;
+    font-size:16px;
+    letter-spacing:-.3px;
+    transition:border-color .18s ease,background .18s ease;
+  }
+  .input::placeholder{color:var(--ink-4);font-size:14.5px;}
+  .input:focus{background:#fff;border-color:var(--orange);}
+  .input.has-clear{padding-right:44px;}
+  .clear-btn{
+    position:absolute;right:10px;width:26px;height:26px;border-radius:50%;
+    background:#DCE0E5;color:#fff;font-size:13px;font-weight:700;
+    display:none;align-items:center;justify-content:center;line-height:1;
+  }
+  .clear-btn.on{display:flex;}
+
+  textarea.input{resize:vertical;min-height:132px;line-height:1.6;padding:14px 15px;font-size:15px;}
+
+  .chips{
+    display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;margin:12px -16px 0;
+    padding-left:16px;padding-right:16px;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto;
+    display:inline-flex;align-items:center;gap:6px;
+    padding:9px 13px;border-radius:999px;
+    background:#fff;border:1.4px solid var(--line-2);
+    font-size:12.5px;font-weight:700;color:var(--ink-2);letter-spacing:-.3px;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .chip:active{transform:scale(.96);}
+  .chip .em{font-size:14px;}
+  .chip.on{border-color:var(--orange);background:var(--orange-soft);color:#C24F08;}
+  .chip.mint.on{border-color:var(--mint);background:var(--mint-soft);color:#0B8A66;}
+
+  .btn{
+    width:100%;height:54px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    font-size:16px;font-weight:800;letter-spacing:-.4px;
+    transition:transform .1s ease,opacity .2s ease,box-shadow .2s ease;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--orange);color:#fff;box-shadow:0 6px 16px rgba(255,111,15,.24);}
+  .btn.primary:disabled{background:#FFC29A;box-shadow:none;}
+  .btn.mint{background:var(--mint);color:#fff;box-shadow:0 6px 16px rgba(18,184,134,.22);}
+  .btn.ghost{background:#F2F4F6;color:var(--ink-2);height:48px;font-size:14.5px;}
+  .btn.sm{height:44px;font-size:14px;border-radius:13px;width:auto;padding:0 16px;}
+  .btn-row{display:flex;gap:8px;margin-top:12px;}
+
+  /* ---------- 실제 사이트로 나가는 링크 ---------- */
+  .ext-btn{
+    display:flex;align-items:center;gap:11px;width:100%;max-width:100%;
+    margin-top:14px;padding:12px 13px;border-radius:15px;
+    background:#FFF8F2;border:1.5px solid #FFDCC2;overflow:hidden;
+    text-decoration:none;color:inherit;text-align:left;
+    transition:transform .1s ease,background .2s ease,border-color .2s ease;
+  }
+  .ext-btn:active{transform:scale(.985);background:#FFF1E5;}
+  .ext-btn .x-ico{
+    flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:19px;
+    box-shadow:0 1px 4px rgba(255,111,15,.14);
+  }
+  .ext-btn .x-body{flex:1 1 auto;min-width:0;overflow:hidden;}
+  .ext-btn .x-body b{display:block;font-size:13.5px;font-weight:800;letter-spacing:-.3px;line-height:1.35;}
+  .ext-btn .x-body span{
+    display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px;letter-spacing:-.2px;
+    line-height:1.4;overflow-wrap:anywhere;
+  }
+  .ext-btn .x-arrow{flex:0 0 auto;font-size:14px;font-weight:800;color:var(--orange);}
+  .ext-btn.mint{background:#F3FBF7;border-color:#BCEADB;}
+  .ext-btn.mint:active{background:#EAF9F3;}
+  .ext-btn.mint .x-arrow{color:var(--mint);}
+
+  /* ---------- skeleton ---------- */
+  .skel{padding:22px 18px;}
+  .sk-line{height:14px;border-radius:8px;background:linear-gradient(90deg,#F1F3F5 25%,#E7EAEE 37%,#F1F3F5 63%);background-size:400% 100%;animation:shimmer 1.25s ease infinite;margin-bottom:12px;}
+  .sk-line.w40{width:40%;}
+  .sk-line.w70{width:70%;}
+  .sk-line.big{height:30px;width:52%;border-radius:10px;}
+  .sk-line.card{height:82px;border-radius:16px;margin-bottom:10px;}
+  @keyframes shimmer{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+  /* ---------- price result ---------- */
+  .result{animation:rise .34s cubic-bezier(.2,.8,.2,1) both;}
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  .res-head{display:flex;align-items:flex-start;gap:11px;}
+  .res-emoji{
+    width:46px;height:46px;flex:0 0 46px;border-radius:14px;
+    background:#F4F6F8;display:flex;align-items:center;justify-content:center;font-size:23px;
+  }
+  .res-head b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.4px;line-height:1.35;}
+  .res-head .sub{display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px;}
+  .conf{
+    margin-left:auto;flex:0 0 auto;
+    padding:4px 8px;border-radius:8px;font-size:10.5px;font-weight:800;
+    background:var(--mint-soft);color:#0B8A66;letter-spacing:-.2px;
+  }
+  .conf.low{background:var(--yellow-soft);color:#A96A00;}
+
+  .avg-wrap{margin-top:18px;}
+  .avg-label{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:-.2px;}
+  .avg-price{display:flex;align-items:baseline;gap:7px;margin-top:2px;}
+  .avg-price b{font-size:32px;font-weight:800;letter-spacing:-1.2px;line-height:1.15;}
+  .avg-price .won{font-size:17px;font-weight:700;color:var(--ink-2);}
+  .discount{
+    margin-left:2px;padding:3px 7px;border-radius:7px;font-size:11px;font-weight:800;
+    background:var(--orange-soft);color:#C24F08;
+  }
+  .avg-caption{font-size:11.5px;color:var(--ink-3);margin-top:4px;letter-spacing:-.2px;}
+
+  .range{margin-top:18px;}
+  .range-track{
+    position:relative;height:10px;border-radius:6px;
+    background:linear-gradient(90deg,#E9EDF1 0%,#E9EDF1 100%);
+  }
+  .range-zone{
+    position:absolute;top:0;bottom:0;border-radius:6px;
+    background:linear-gradient(90deg,#C9F2E2,#A9EBD6);
+  }
+  .range-dot{
+    position:absolute;top:50%;width:16px;height:16px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:#fff;border:3.5px solid var(--orange);
+    box-shadow:0 2px 8px rgba(255,111,15,.32);
+  }
+  .range-dot.mint{border-color:var(--mint);box-shadow:0 2px 8px rgba(18,184,134,.3);}
+  .range-scale{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--ink-3);font-weight:600;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px;}
+  .mini-card{
+    padding:13px 13px 12px;border-radius:15px;background:#F8FAFB;border:1px solid var(--line);
+  }
+  .mini-card .k{font-size:11.5px;font-weight:800;color:var(--ink-3);letter-spacing:-.2px;}
+  .mini-card .v{font-size:15px;font-weight:800;margin-top:4px;letter-spacing:-.4px;}
+  .mini-card.buy{background:#F3FBF7;border-color:#DDF3EA;}
+  .mini-card.sell{background:#FFF8F3;border-color:#FFE8D6;}
+
+  .newline{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:12px;padding:11px 13px;border-radius:13px;background:#F8F9FA;
+    font-size:12.5px;color:var(--ink-2);font-weight:600;
+  }
+  .newline s{color:var(--ink-4);font-weight:600;}
+
+  .tips{margin-top:16px;}
+  .tips .tip{
+    display:flex;gap:9px;font-size:12.5px;color:var(--ink-2);line-height:1.55;
+    padding:9px 0;letter-spacing:-.2px;
+  }
+  .tips .tip + .tip{border-top:1px dashed var(--line-2);}
+  .tips .tip i{flex:0 0 18px;font-style:normal;font-size:13px;line-height:1.5;}
+
+  .script{
+    margin-top:10px;border-radius:14px;background:#FFFBF7;border:1px solid #FFEBDC;padding:12px 13px;
+  }
+  .script .s-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .script .s-label{font-size:11px;font-weight:800;color:#C24F08;letter-spacing:-.2px;}
+  .script p{margin-top:6px;font-size:13px;color:var(--ink);line-height:1.5;letter-spacing:-.2px;}
+  .copy-btn{
+    flex:0 0 auto;padding:5px 9px;border-radius:8px;background:#fff;
+    border:1px solid #FFE0C7;font-size:11px;font-weight:800;color:#C24F08;
+    transition:all .15s ease;
+  }
+  .copy-btn:active{transform:scale(.95);}
+  .copy-btn.done{background:var(--mint);color:#fff;border-color:var(--mint);}
+
+  .deal-box{margin-top:16px;padding:14px;border-radius:15px;background:#FAFBFC;border:1px solid var(--line);}
+  .deal-box .d-title{font-size:12.5px;font-weight:800;color:var(--ink-2);letter-spacing:-.3px;}
+  .seg{display:flex;gap:6px;margin-top:9px;background:#EDF0F3;padding:4px;border-radius:11px;}
+  .seg button{
+    flex:1;height:34px;border-radius:8px;font-size:12.5px;font-weight:800;color:var(--ink-3);
+    transition:all .15s ease;
+  }
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(25,31,40,.11);}
+  .deal-row{display:flex;gap:7px;margin-top:9px;}
+  .deal-row .input{flex:1;min-width:0;padding:11px 13px;font-size:15px;background:#fff;border-color:var(--line-2);}
+  .deal-row .btn{width:auto;flex:0 0 auto;height:auto;padding:0 15px;font-size:13px;border-radius:12px;}
+
+  /* ---------- alba result ---------- */
+  .verdict-head{display:flex;align-items:center;gap:14px;}
+  .ring{
+    width:78px;height:78px;flex:0 0 78px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:conic-gradient(var(--ring-color) calc(var(--ring-p) * 1%), #EDF0F3 0);
+    transition:background .6s ease;
+  }
+  .ring-in{
+    width:62px;height:62px;border-radius:50%;background:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(25,31,40,.04);
+  }
+  .ring-in b{font-size:21px;font-weight:800;letter-spacing:-.8px;line-height:1;color:var(--ring-color);}
+  .ring-in span{font-size:9.5px;color:var(--ink-4);font-weight:700;margin-top:2px;}
+  .verdict-txt b{display:block;font-size:18px;font-weight:800;letter-spacing:-.5px;}
+  .verdict-txt .v-badge{
+    display:inline-block;margin-bottom:5px;padding:3px 8px;border-radius:7px;
+    font-size:10.5px;font-weight:800;letter-spacing:-.2px;
+  }
+  .verdict-txt p{font-size:12.8px;color:var(--ink-2);line-height:1.5;margin-top:4px;letter-spacing:-.3px;}
+
+  .checks{margin-top:16px;border-top:1px solid var(--line);}
+  .chk{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);}
+  .chk:last-child{border-bottom:0;}
+  .chk .c-ico{
+    flex:0 0 22px;width:22px;height:22px;border-radius:7px;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+  }
+  .chk .c-body b{display:block;font-size:13px;font-weight:800;letter-spacing:-.3px;}
+  .chk .c-body span{display:block;font-size:11.8px;color:var(--ink-3);line-height:1.5;margin-top:2px;letter-spacing:-.2px;}
+  .st-ok .c-ico{background:var(--mint-soft);color:#0B8A66;}
+  .st-warn .c-ico{background:var(--yellow-soft);color:#C58000;}
+  .st-danger .c-ico{background:var(--red-soft);color:var(--red);}
+  .st-unknown .c-ico{background:#F1F3F5;color:var(--ink-3);}
+  .st-danger .c-body b{color:#D62C3C;}
+
+  .safe-note{
+    margin-top:12px;padding:10px 12px;border-radius:12px;background:#FFF6E5;
+    font-size:11.5px;color:#8A5B00;line-height:1.55;letter-spacing:-.2px;
+  }
+
+  .qcard{margin-top:14px;padding:15px;border-radius:16px;background:#F2FBF7;border:1px solid #DDF3EA;}
+  .qcard .q-title{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .qcard .q-title b{font-size:13px;font-weight:800;color:#0B8A66;letter-spacing:-.3px;}
+  .qcard ol{margin:10px 0 0;padding-left:0;counter-reset:q;}
+  .qcard ol li{
+    position:relative;padding-left:20px;font-size:12.5px;color:var(--ink-2);line-height:1.55;
+    margin-bottom:8px;letter-spacing:-.2px;
+  }
+  .qcard ol li:last-child{margin-bottom:0;}
+  .qcard ol li::before{
+    counter-increment:q;content:counter(q);
+    position:absolute;left:0;top:2px;
+    width:15px;height:15px;border-radius:50%;background:#fff;color:#0B8A66;
+    font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px #DDF3EA;
+  }
+
+  /* ---------- ledger ---------- */
+  .money-card{
+    border-radius:var(--r-lg);padding:20px;
+    background:linear-gradient(150deg,#12B886 0%,#16C79A 55%,#2ED3A6 100%);
+    color:#fff;box-shadow:0 10px 26px rgba(18,184,134,.26);
+    margin-bottom:14px;position:relative;overflow:hidden;
+  }
+  .money-card::after{
+    content:"";position:absolute;right:-24px;bottom:-40px;width:130px;height:130px;border-radius:50%;
+    background:rgba(255,255,255,.1);
+  }
+  .money-card .m-label{font-size:12px;font-weight:700;opacity:.9;letter-spacing:-.2px;}
+  .money-card .m-value{display:flex;align-items:baseline;gap:5px;margin-top:3px;}
+  .money-card .m-value b{font-size:34px;font-weight:800;letter-spacing:-1.4px;line-height:1.1;}
+  .money-card .m-value span{font-size:16px;font-weight:700;opacity:.92;}
+  .m-stats{display:flex;gap:8px;margin-top:16px;position:relative;}
+  .m-stat{
+    flex:1;background:rgba(255,255,255,.16);border-radius:12px;padding:9px 11px;
+    backdrop-filter:blur(4px);
+  }
+  .m-stat b{display:block;font-size:16px;font-weight:800;letter-spacing:-.4px;}
+  .m-stat span{display:block;font-size:10.5px;opacity:.9;font-weight:600;margin-top:1px;}
+
+  .goal{margin-top:16px;position:relative;}
+  .goal .g-top{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;opacity:.92;margin-bottom:5px;}
+  .goal-track{height:7px;border-radius:4px;background:rgba(255,255,255,.28);overflow:hidden;}
+  .goal-fill{height:100%;border-radius:4px;background:#fff;transition:width .6s cubic-bezier(.2,.8,.2,1);}
+
+  .add-form .row{display:flex;gap:8px;}
+  .add-form .row .input{flex:1;min-width:0;padding:12px 14px;font-size:15px;}
+  .add-form .row:first-child .input{flex:1;}
+  .select{
+    padding:12px 12px;border-radius:14px;background:#F2F4F6;border:1.5px solid transparent;
+    font-size:14px;font-weight:700;color:var(--ink-2);outline:none;
+    -webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B95A1' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:30px;
+  }
+
+  .rec{display:flex;gap:11px;padding:14px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
+  .rec:last-child{border-bottom:0;padding-bottom:2px;}
+  .rec .r-ico{
+    width:36px;height:36px;flex:0 0 36px;border-radius:11px;background:#F4F6F8;
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+  }
+  .rec .r-body{flex:1;min-width:0;}
+  .rec .r-body b{display:block;font-size:13.2px;font-weight:700;letter-spacing:-.3px;line-height:1.4;}
+  .rec .r-body span{display:block;font-size:11.3px;color:var(--ink-3);margin-top:2px;letter-spacing:-.2px;line-height:1.45;}
+  .rec .r-amt{text-align:right;flex:0 0 auto;}
+  .rec .r-amt b{font-size:13.5px;font-weight:800;letter-spacing:-.4px;color:#0B8A66;}
+  .rec .r-amt b.zero{color:var(--ink-3);font-weight:700;font-size:12px;}
+  .rec .r-amt .tag{
+    display:inline-block;margin-top:4px;padding:2px 6px;border-radius:5px;
+    font-size:9.5px;font-weight:800;background:#F1F3F5;color:var(--ink-3);
+  }
+  .tag.t-중고{background:#FFF1E6;color:#C24F08;}
+  .tag.t-체험단{background:#F0EDFF;color:#6B4EE6;}
+  .tag.t-알바{background:#FFEDEF;color:#D62C3C;}
+  .tag.t-기타{background:#F1F3F5;color:var(--ink-3);}
+  .del{
+    flex:0 0 auto;width:26px;height:26px;border-radius:8px;color:var(--ink-4);
+    font-size:15px;display:flex;align-items:center;justify-content:center;
+  }
+  .del:active{background:#F4F6F8;}
+
+  .empty{padding:26px 10px;text-align:center;color:var(--ink-3);font-size:12.5px;line-height:1.6;}
+  .empty .e-emoji{font-size:28px;display:block;margin-bottom:8px;}
+
+  .foot-note{
+    margin:16px 2px 8px;font-size:10.8px;color:var(--ink-4);line-height:1.6;letter-spacing:-.1px;
+  }
+
+  /* ---------- 꿀매물 알림 ---------- */
+  .hero.honey{background:linear-gradient(135deg,#FFFAEC 0%,#FFF4F1 52%,#F1FBF6 100%);}
+  .hero.honey::after{background:radial-gradient(circle at 50% 50%,rgba(245,166,35,.18),rgba(245,166,35,0) 70%);}
+  .pill.honey{color:#A96A00;background:#fff;box-shadow:inset 0 0 0 1px rgba(245,166,35,.3);}
+
+  .thr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .thr{
+    display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+    padding:11px 12px;border-radius:14px;background:#F5F6F8;
+    border:1.5px solid transparent;text-align:left;min-width:0;
+    transition:background .15s ease,border-color .15s ease,transform .1s ease;
+  }
+  .thr:active{transform:scale(.98);}
+  .thr b{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12.8px;font-weight:800;letter-spacing:-.35px;line-height:1.3;}
+  .thr span{font-size:10.3px;color:var(--ink-3);font-weight:600;letter-spacing:-.2px;line-height:1.35;}
+  .thr i{font-style:normal;padding:2px 5px;border-radius:5px;background:#F04452;color:#fff;font-size:9px;font-weight:800;letter-spacing:-.1px;}
+  .thr.on{border-color:#F5A623;background:#FFF8E8;}
+  .thr.on b{color:#A96A00;}
+  .thr.on span{color:#9A7A2A;}
+  @media (max-width:340px){
+    .thr{padding:10px;}
+    .thr b{font-size:12px;gap:3px;}
+    .thr span{font-size:10px;}
+    .thr i{font-size:8.5px;padding:1px 4px;}
+  }
+  .thr-input{display:flex;align-items:center;gap:7px;margin-top:8px;}
+  .thr-input .input{flex:1;min-width:0;padding:12px 13px;font-size:15px;background:#fff;border-color:var(--line-2);}
+  .thr-input .unit{flex:0 0 auto;font-size:11.5px;font-weight:800;color:var(--ink-3);letter-spacing:-.2px;}
+
+  .al-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);}
+  .al-row:last-child{border-bottom:0;padding-bottom:2px;}
+  .al-row.off{opacity:.55;}
+  .al-ico{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:#FFF6E5;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .al-body{flex:1 1 auto;min-width:0;}
+  .al-body b{display:block;font-size:13px;font-weight:800;letter-spacing:-.3px;line-height:1.35;overflow-wrap:anywhere;}
+  .al-body span{display:block;font-size:11px;color:var(--ink-3);margin-top:2px;letter-spacing:-.2px;line-height:1.4;}
+  .sw{position:relative;flex:0 0 42px;width:42px;height:24px;border-radius:999px;background:#DCE0E5;transition:background .18s ease;}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(25,31,40,.24);transition:transform .18s ease;}
+  .sw.on{background:var(--mint);}
+  .sw.on::after{transform:translateX(18px);}
+  .al-del{flex:0 0 26px;width:26px;height:26px;border-radius:8px;color:var(--ink-4);font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .al-del:active{background:#F4F6F8;}
+
+  .feed-card{
+    border-radius:17px;padding:14px;margin-bottom:10px;
+    background:linear-gradient(160deg,#FFFCF4 0%,#FFF6E3 100%);
+    border:1px solid #FFE7BC;box-shadow:0 2px 10px rgba(245,166,35,.07);
+    animation:rise .34s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .feed-top{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#A96A00;letter-spacing:-.2px;}
+  .feed-live{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#F04452;box-shadow:0 0 0 3px rgba(240,68,82,.14);}
+  .feed-ago{margin-left:auto;font-size:10.5px;color:#B98B2E;font-weight:700;}
+  .feed-name{font-size:14.5px;font-weight:800;letter-spacing:-.4px;margin-top:7px;line-height:1.35;overflow-wrap:anywhere;}
+  .feed-price{display:flex;align-items:baseline;gap:5px;margin-top:3px;flex-wrap:wrap;}
+  .feed-price b{font-size:23px;font-weight:800;letter-spacing:-.9px;color:#C9531A;line-height:1.15;}
+  .feed-price .won{font-size:13px;font-weight:700;color:var(--ink-2);}
+  .feed-drop{padding:3px 7px;border-radius:7px;background:#FFEDEF;color:#D62C3C;font-size:10.5px;font-weight:800;letter-spacing:-.2px;}
+  .feed-meta{font-size:11px;color:var(--ink-3);margin-top:5px;letter-spacing:-.2px;line-height:1.45;}
+  .feed-card .ext-btn{margin-top:10px;background:#fff;border-color:#FFE0C7;}
+
+  /* ---------- tabbar ---------- */
+  .tabbar{
+    position:sticky;bottom:0;z-index:30;
+    display:flex;gap:2px;
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.95);
+    backdrop-filter:saturate(180%) blur(14px);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);
+    border-top:1px solid var(--line);
+  }
+  .tabbar button{
+    flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:7px 0 4px;border-radius:12px;color:var(--ink-4);
+    transition:color .18s ease,transform .1s ease;
+  }
+  .tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+  .tabbar button span{font-size:10.5px;font-weight:700;letter-spacing:-.3px;white-space:nowrap;}
+  .tabbar button.on{color:var(--orange);}
+  .tabbar button[data-tab="honey"].on{color:#E8890C;}
+  .tabbar button[data-tab="alba"].on{color:var(--mint);}
+  .tabbar button[data-tab="ledger"].on{color:#12B886;}
+  .tabbar button:active{transform:scale(.94);}
+  /* 4탭이 320px에서도 한 줄에 들어가도록 */
+  @media (max-width:360px){
+    .tabbar{padding-left:5px;padding-right:5px;gap:1px;}
+    .tabbar button{gap:2px;padding:6px 0 3px;}
+    .tabbar button svg{width:20px;height:20px;}
+    .tabbar button span{font-size:9.6px;letter-spacing:-.4px;}
+  }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:88px;transform:translate(-50%,14px);
+    max-width:86%;padding:11px 16px;border-radius:12px;
+    background:rgba(25,31,40,.93);color:#fff;font-size:12.8px;font-weight:600;
+    letter-spacing:-.2px;line-height:1.4;text-align:center;
+    opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;
+    z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.22);
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0);}
+
+  .spin{
+    display:inline-block;width:16px;height:16px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+    animation:sp .7s linear infinite;
+  }
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001s !important;transition-duration:.001s !important;}
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <header class="appbar">
+    <div class="logo" aria-hidden="true"><img src="icon-192.png" alt=""></div>
+    <div class="brand-txt">
+      <b>살까말까</b>
+      <span>중고 시세 · 꿀매물 알림 · 알바 판독</span>
+    </div>
+    <div class="avatar" aria-hidden="true">?</div>
+  </header>
+
+  <main>
+
+    <!-- ================= 시세 탭 ================= -->
+    <section class="panel on" id="panel-price" role="tabpanel" aria-labelledby="tab-price">
+      <div class="hero">
+        <h2>이 매물,<br>얼마가 적당할까요?</h2>
+        <p>사진 한 장이나 상품명만 있으면 중고 시세를 바로 뽑아드려요. 책부터 전자기기·생활가전까지 다 돼요.</p>
+        <div class="badge-row">
+          <span class="pill orange">🛍️ 중고 매물 시세</span>
+          <span class="pill">📱 아이폰 15 · 💨 다이슨 에어랩</span>
+          <span class="pill">🌀 공기청정기</span>
+        </div>
+      </div>
+
+      <div class="card tight">
+        <button class="uploader" id="priceUploader" type="button">
+          <span class="u-ico" id="priceUploaderIcon">📷</span>
+          <span style="min-width:0">
+            <b id="priceUploaderTitle">사진으로 찾기</b>
+            <span id="priceUploaderSub">상품 사진을 올려주세요</span>
+          </span>
+          <span class="u-add">＋</span>
+        </button>
+        <input type="file" id="pricePhoto" accept="image/*" style="display:none">
+        <div id="pricePhotoNote"></div>
+
+        <div class="field">
+          <label for="priceInput">상품명</label>
+          <div class="input-wrap">
+            <input class="input has-clear" id="priceInput" type="text" placeholder="예) 노부영 사이트워드 리더스" autocomplete="off" enterkeyhint="search">
+            <button class="clear-btn" id="priceClear" type="button" aria-label="지우기">✕</button>
+          </div>
+        </div>
+
+        <div class="chips" id="priceChips">
+          <button class="chip" type="button" data-action="sample-price" data-key="nobuyoung"><span class="em">📚</span>노부영 사이트워드</button>
+          <button class="chip" type="button" data-action="sample-price" data-key="iphone15"><span class="em">📱</span>아이폰 15 128GB</button>
+          <button class="chip" type="button" data-action="sample-price" data-key="airwrap"><span class="em">💨</span>다이슨 에어랩</button>
+          <button class="chip" type="button" data-action="sample-price" data-key="humidifier"><span class="em">💧</span>아기 가습기</button>
+          <button class="chip" type="button" data-action="sample-price" data-key="airpurifier"><span class="em">🌀</span>공기청정기</button>
+          <button class="chip" type="button" data-action="sample-price" data-key="saipen"><span class="em">🖍️</span>세이펜 32G</button>
+          <button class="chip" type="button" data-action="sample-price" data-key="tripptrapp"><span class="em">🪑</span>스토케 트립트랩</button>
+        </div>
+
+        <button class="btn primary" type="button" data-action="query-price" id="priceSubmit" style="margin-top:14px;">시세 조회하기</button>
+      </div>
+
+      <div id="priceResult"></div>
+
+      <p class="foot-note">시제품 데모 화면이에요 · 가격은 실제 당근 매물을 참고한 예시값이에요. 결과 카드의 🥕 버튼을 누르면 동삭동 · 거래가능(판매중) 매물 위주로 당근 검색이 열려요.</p>
+    </section>
+
+    <!-- ================= 꿀매물 탭 ================= -->
+    <section class="panel" id="panel-honey" role="tabpanel" aria-labelledby="tab-honey">
+      <div class="hero honey">
+        <h2>평균가보다 싸게 뜨면<br>바로 알려드릴게요</h2>
+        <p>중고 매물은 무엇이든 좋아요. 이름만 넣어두면 시세보다 확 싸게 올라온 매물만 골라 보여드려요.</p>
+        <div class="badge-row">
+          <span class="pill honey">🍯 평균보다 30% 싸면 알림</span>
+          <span class="pill">📚 책 · 📱 전자기기 · 🌀 생활가전</span>
+        </div>
+      </div>
+
+      <div class="card tight">
+        <div class="card-title">
+          <h3>꿀매물 알림 등록</h3>
+          <span class="mini">이 기기에만 저장돼요</span>
+        </div>
+        <div class="al-form">
+          <div class="field" style="margin-top:0;">
+            <label for="alName">알림 걸 물건</label>
+            <div class="input-wrap">
+              <input class="input has-clear" id="alName" type="text" placeholder="예) 다이슨 에어랩, 노부영 사이트워드" autocomplete="off" enterkeyhint="done">
+              <button class="clear-btn" id="alClear" type="button" aria-label="지우기">✕</button>
+            </div>
+          </div>
+
+          <div class="chips" id="alChips">
+            <button class="chip" type="button" data-action="al-sample" data-key="nobuyoung"><span class="em">📚</span>노부영 사이트워드</button>
+            <button class="chip" type="button" data-action="al-sample" data-key="iphone15"><span class="em">📱</span>아이폰 15</button>
+            <button class="chip" type="button" data-action="al-sample" data-key="airwrap"><span class="em">💨</span>다이슨 에어랩</button>
+            <button class="chip" type="button" data-action="al-sample" data-key="airpurifier"><span class="em">🌀</span>공기청정기</button>
+            <button class="chip" type="button" data-action="al-sample" data-key="humidifier"><span class="em">💧</span>아기 가습기</button>
+            <button class="chip" type="button" data-action="al-sample" data-key="tripptrapp"><span class="em">🪑</span>스토케 트립트랩</button>
+            <button class="chip" type="button" data-action="al-sample" data-key="saipen"><span class="em">🖍️</span>세이펜</button>
+          </div>
+
+          <div class="field">
+            <label>얼마나 싸면 알릴까요?</label>
+            <div class="thr-grid" id="alThrGrid">
+              <button class="thr" type="button" data-action="al-thr" data-thr="20"><b>평균가 −20%</b><span>조금만 싸도 알림</span></button>
+              <button class="thr on" type="button" data-action="al-thr" data-thr="30"><b>평균가 −30% <i>추천</i></b><span>적당히 싸면 알림</span></button>
+              <button class="thr" type="button" data-action="al-thr" data-thr="40"><b>평균가 −40%</b><span>확 싼 매물만</span></button>
+              <button class="thr" type="button" data-action="al-thr" data-thr="custom"><b>직접 희망가</b><span>이 가격 이하만</span></button>
+            </div>
+            <div class="thr-input" id="alCustomWrap" style="display:none;">
+              <input class="input" id="alCustom" type="text" inputmode="numeric" placeholder="예) 15000" autocomplete="off">
+              <span class="unit">원 이하</span>
+            </div>
+          </div>
+
+          <button class="btn primary" type="button" data-action="al-add" style="margin-top:14px;">🔔 알림 등록하기</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>내 알림</h3>
+          <span class="mini" id="alCount">0개</span>
+        </div>
+        <div id="alList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>오늘의 꿀매물</h3>
+          <span class="mini" id="feedTime">대기 중</span>
+        </div>
+        <div id="alFeed"></div>
+        <div class="demo-note"><b>데모 알림이에요.</b> 외부에서 알림을 받아오는 게 아니라, 등록한 기준으로 어떤 매물이 걸리는지 보여주는 예시예요. 🥕 버튼을 누르면 동삭동 · 거래가능 매물 위주로 그 이름을 직접 검색해요.</div>
+      </div>
+
+      <p class="foot-note">알림 목록은 이 폰에만 저장돼요(localStorage). 앱 데이터를 지우면 함께 사라져요.</p>
+    </section>
+
+    <!-- ================= 알바 탭 ================= -->
+    <section class="panel" id="panel-alba" role="tabpanel" aria-labelledby="tab-alba">
+      <div class="hero mint">
+        <h2>이 알바,<br>괜찮은 걸까요?</h2>
+        <p>공고 캡처나 글을 붙여넣으면 위험 신호를 하나씩 짚어드려요.</p>
+        <div class="badge-row">
+          <span class="pill mint">2026 최저시급 10,320원 기준</span>
+        </div>
+      </div>
+
+      <div class="card tight">
+        <button class="uploader" id="albaUploader" type="button" style="background:#F3FBF7;border-color:#B9EAD8;">
+          <span class="u-ico" id="albaUploaderIcon">🖼️</span>
+          <span style="min-width:0">
+            <b id="albaUploaderTitle">공고 캡처 올리기</b>
+            <span id="albaUploaderSub">캡처 사진에서 공고를 읽어와요</span>
+          </span>
+          <span class="u-add" style="color:var(--mint)">＋</span>
+        </button>
+        <input type="file" id="albaPhoto" accept="image/*" style="display:none">
+        <div id="albaPhotoNote"></div>
+
+        <div class="field">
+          <label for="albaText">공고 내용</label>
+          <textarea class="input" id="albaText" placeholder="공고 글을 그대로 붙여넣어 주세요.&#10;예) 시급 22,000원 / 재택 / 초보 환영 ..."></textarea>
+        </div>
+
+        <div class="chips" id="albaChips">
+          <button class="chip mint" type="button" data-action="sample-alba" data-key="scam"><span class="em">⚠️</span>재택 검색대행</button>
+          <button class="chip mint" type="button" data-action="sample-alba" data-key="gs25"><span class="em">🏪</span>동삭동 편의점</button>
+          <button class="chip mint" type="button" data-action="sample-alba" data-key="logistics"><span class="em">📦</span>물류센터 단기</button>
+          <button class="chip mint" type="button" data-action="sample-alba" data-key="account"><span class="em">🪪</span>계정 대여 재택</button>
+        </div>
+
+        <button class="btn mint" type="button" data-action="analyze" id="albaSubmit" style="margin-top:14px;">위험도 분석하기</button>
+      </div>
+
+      <div id="albaResult"></div>
+
+      <p class="foot-note">시제품 데모 화면이에요 · 실제 공고는 💼 버튼으로 당근알바에서 확인하고, 근로계약서와 4대보험 가입 여부는 꼭 확인하세요.</p>
+    </section>
+
+    <!-- ================= 가계부 탭 ================= -->
+    <section class="panel" id="panel-ledger" role="tabpanel" aria-labelledby="tab-ledger">
+      <div class="money-card">
+        <div class="m-label" id="totalLabel">이번 달 아낀 돈</div>
+        <div class="m-value"><b id="totalSaved">0</b><span>원</span></div>
+        <div class="m-stats">
+          <div class="m-stat"><b id="statSavedCount">0건</b><span>절약 기록</span></div>
+          <div class="m-stat"><b id="statBlockedCount">0건</b><span>위험 알바 걸러냄</span></div>
+        </div>
+        <div class="goal">
+          <div class="g-top"><span>이번 달 목표 300,000원</span><span id="goalPct">0%</span></div>
+          <div class="goal-track"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>새 기록 추가</h3>
+          <span class="mini">이 기기에만 저장돼요</span>
+        </div>
+        <div class="add-form">
+          <div class="row">
+            <input class="input" id="addTitle" type="text" placeholder="무엇으로 아꼈나요? (예: 노부영 중고 구매)">
+          </div>
+          <div class="row" style="margin-top:8px;">
+            <input class="input" id="addAmount" type="text" inputmode="numeric" placeholder="아낀 금액 (원)">
+            <select class="select" id="addType" aria-label="종류">
+              <option value="중고">중고</option>
+              <option value="체험단">체험단</option>
+              <option value="알바">알바</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="row" style="margin-top:8px;">
+            <input class="input" id="addMemo" type="text" placeholder="메모 (선택)">
+          </div>
+          <button class="btn primary" type="button" data-action="add-record" style="margin-top:10px;height:48px;font-size:15px;">기록 저장하기</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <h3>아낀 기록</h3>
+          <span class="mini" id="recCount">0건</span>
+        </div>
+        <div id="recList"></div>
+      </div>
+
+      <p class="foot-note">기록은 이 폰에만 저장돼요(localStorage). 앱 데이터를 지우면 함께 사라지니 큰 금액은 메모해 두세요.</p>
+    </section>
+
+  </main>
+
+  <nav class="tabbar" role="tablist" aria-label="메뉴">
+    <button type="button" class="on" data-action="tab" data-tab="price" role="tab" aria-selected="true" id="tab-price">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.2 12.4 21.4a2 2 0 0 1-2.8 0L3 14.8V3.4h11.4l6.2 6.2a2.6 2.6 0 0 1 0 3.6Z"/><circle cx="7.8" cy="8.2" r="1.4"/></svg>
+      <span>시세</span>
+    </button>
+    <button type="button" data-action="tab" data-tab="honey" role="tab" aria-selected="false" id="tab-honey">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.4 18h15.2L18 15.5Z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg>
+      <span>꿀매물</span>
+    </button>
+    <button type="button" data-action="tab" data-tab="alba" role="tab" aria-selected="false" id="tab-alba">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 5.9v5.7c0 4.3 2.9 7.5 7 8.9 4.1-1.4 7-4.6 7-8.9V5.9L12 3Z"/><path d="m9.2 11.8 2 2 3.7-3.9"/></svg>
+      <span>알바</span>
+    </button>
+    <button type="button" data-action="tab" data-tab="ledger" role="tab" aria-selected="false" id="tab-ledger">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="13" rx="3.2"/><path d="M3 10.5h18"/><circle cx="16.6" cy="14.8" r="1.3"/></svg>
+      <span>가계부</span>
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ================= 공통 ================= */
+  var MIN_WAGE = 10320;          // 2026년 적용 최저시급
+  var MONTHLY_GOAL = 300000;
+  var STORE_KEY = 'danggeun.reader.ledger.v1';
+  var ALERT_KEY = 'danggeun.reader.alerts.v1';
+  var DAANGN_SEARCH_URL = 'https://www.daangn.com/kr/buy-sell/s/?in=%EB%8F%99%EC%82%AD%EB%8F%99-4784&only_on_sale=true&search=';
+  var DAANGN_JOBS_URL = 'https://jobs.daangn.com/';
+
+  function daangnSearchUrl(q){ return DAANGN_SEARCH_URL + encodeURIComponent(String(q || '').trim()); }
+
+  /* 새 창으로 열기 · 팝업이 막히면 앵커 기본 동작(target="_blank")으로 넘긴다 */
+  function openExternal(url, ev){
+    var w = null;
+    try{ w = window.open(url, '_blank'); }catch(err){ w = null; }
+    if(w){
+      try{ w.opener = null; }catch(err2){ /* noopener 목적이라 실패해도 무시 */ }
+      if(ev && ev.preventDefault){ ev.preventDefault(); }
+      return true;
+    }
+    return false;
+  }
+
+  function $(id){ return document.getElementById(id); }
+  function fmt(n){ return Number(n).toLocaleString('ko-KR'); }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function todayStr(){
+    var d = new Date();
+    var m = String(d.getMonth()+1); if(m.length<2){ m = '0'+m; }
+    var dd = String(d.getDate()); if(dd.length<2){ dd = '0'+dd; }
+    return d.getFullYear()+'-'+m+'-'+dd;
+  }
+  function monthStr(){ return todayStr().slice(0,7); }
+
+  var toastTimer = null;
+  function toast(msg){
+    var el = $('toast');
+    el.textContent = msg;
+    el.classList.add('on');
+    if(toastTimer){ clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function(){ el.classList.remove('on'); }, 2000);
+  }
+
+  function copyText(text, btn){
+    function done(){
+      if(btn){
+        var old = btn.getAttribute('data-old') || btn.textContent;
+        btn.setAttribute('data-old', old);
+        btn.textContent = '복사됨 ✓';
+        btn.classList.add('done');
+        setTimeout(function(){
+          btn.textContent = old;
+          btn.classList.remove('done');
+        }, 1600);
+      }
+      toast('복사했어요. 붙여넣기만 하면 돼요');
+    }
+    function fallback(){
+      try{
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly','readonly');
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      }catch(e){
+        toast('복사가 안 돼요. 길게 눌러 직접 복사해 주세요');
+      }
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    }else{
+      fallback();
+    }
+  }
+
+  /* ================= 시세 데이터 ================= */
+  var PRICES = {
+    nobuyoung: {
+      emoji: '📚',
+      name: '노부영 사이트워드 리더스',
+      category: '유아 영어전집',
+      newPrice: 255000,
+      hotDeal: 165900,
+      avg: 32000,
+      low: 25000,
+      high: 42000,
+      count: 38,
+      trend: -4,
+      confidence: 'high',
+      buyRange: [25000, 30000],
+      sellRange: [35000, 40000],
+      caption: '리더 48권 + 오디오 CD 8장 구성 기준',
+      notes: [
+        '전권 48권이 다 있는지 먼저 확인하세요. 일부 빠지면 5,000~8,000원 낮아져요.',
+        '세이펜 버전은 일반판보다 10,000원 정도 비싸게 거래돼요.',
+        '워크북·단어카드가 미사용이면 3만 원대 중반도 나가요.'
+      ],
+      tips: [
+        '2만 원대 매물은 대부분 급처분이에요. 알림 켜두고 하루만 기다리면 3~5천 원 더 내려요.',
+        '본책 상태는 "낙서 없음 · 모서리 깨끗" 정도면 충분해요. CD는 재생 확인까지 물어보세요.'
+      ],
+      scripts: [
+        { label: '구매자 · 첫 제안', text: '안녕하세요! 책 상태 좋아 보여서요. 혹시 28,000원에 가능할까요? 오늘 바로 픽업 가능해요 :)' },
+        { label: '구매자 · 재제안', text: '확인해 보니 CD가 8장 중 6장이네요. 그럼 25,000원에 드릴 수 있을까요?' }
+      ]
+    },
+    iphone15: {
+      emoji: '📱',
+      name: '아이폰 15 128GB',
+      category: '디지털기기',
+      newPrice: 1250000,
+      hotDeal: null,
+      avg: 470000,
+      low: 420000,
+      high: 530000,
+      count: 64,
+      trend: -6,
+      confidence: 'high',
+      buyRange: [430000, 470000],
+      sellRange: [480000, 520000],
+      caption: '배터리 성능 85~90% · 무수리 기준',
+      notes: [
+        '가격은 배터리 성능 최대치가 거의 결정해요. 80% 아래면 5만 원 이상 빠져요.',
+        '수리 이력(액정·배터리 교체)이 있으면 3만~7만 원 낮게 잡으세요.',
+        '통신사 락 해제·초기화 여부를 꼭 확인하고, 거래 시 자리에서 확인하세요.'
+      ],
+      tips: [
+        '팔 때는 배터리 성능 화면 캡처를 첫 장에 올리면 문의가 2배 늘어요.',
+        '찍힌 자리는 사진에 표시해 두면 나중에 분쟁이 없어요.'
+      ],
+      scripts: [
+        { label: '판매자 · 가격 문의 답장', text: '안녕하세요! 배터리 성능 87%에 수리 이력 없어요. 48만 원이면 바로 드릴 수 있어요 :)' },
+        { label: '구매자 · 네고', text: '배터리가 87%면 45만 원 정도가 맞는 것 같은데, 조정 가능할까요?' }
+      ]
+    },
+    humidifier: {
+      emoji: '💧',
+      name: '아기 가습기',
+      category: '육아·가전',
+      newPrice: 89000,
+      hotDeal: 59000,
+      avg: 27000,
+      low: 18000,
+      high: 38000,
+      count: 41,
+      trend: -2,
+      confidence: 'mid',
+      buyRange: [20000, 28000],
+      sellRange: [28000, 35000],
+      caption: '가열식 · 필터 포함 기준 (11월 성수기)',
+      notes: [
+        '가열식과 초음파식은 중고 시세가 2배 차이 나요. 제품명을 정확히 확인하세요.',
+        '물때·석회 자국이 있으면 세척 비용(1~2만 원)을 빼고 생각하세요.',
+        '필터 소모품은 대부분 재구매해야 해서 5,000~15,000원 추가로 들어요.'
+      ],
+      tips: [
+        '11월은 가습기 성수기라 매물이 빨리 나가요. 마음에 들면 오늘 결정하는 게 좋아요.',
+        '무상 AS 기간이 남았는지, 영수증이 있는지 물어보면 좋아요.'
+      ],
+      scripts: [
+        { label: '구매자 · 첫 제안', text: '안녕하세요! 필터는 언제 교체하셨나요? 22,000원에 가능하면 바로 갈게요.' }
+      ]
+    },
+    saipen: {
+      emoji: '🖍️',
+      name: '세이펜 32G',
+      category: '유아 학습기기',
+      newPrice: 199000,
+      hotDeal: null,
+      avg: 110000,
+      low: 90000,
+      high: 140000,
+      count: 27,
+      trend: +3,
+      confidence: 'mid',
+      buyRange: [90000, 115000],
+      sellRange: [120000, 135000],
+      caption: '레인보우 · 충전식 32G 기준',
+      notes: [
+        '태극 버전과 레인보우 버전 가격대가 달라요. 모델명을 확인하세요.',
+        '충전 단자 헐거움이 잦은 부품이라 충전 상태 확인이 필수예요.',
+        '호환 책이 함께 오면 1~2만 원 더 쳐줘도 괜찮아요.'
+      ],
+      tips: [
+        '충전 케이블 없이 파는 매물이 많아요. 케이블 포함인지 물어보세요.',
+        'AS 기간 남은 제품이면 13만 원까지도 거래돼요.'
+      ],
+      scripts: [
+        { label: '구매자 · 첫 제안', text: '안녕하세요! 충전 단자 상태 괜찮은가요? 100,000원에 가능할까요?' }
+      ]
+    },
+    airwrap: {
+      emoji: '💨',
+      name: '다이슨 에어랩',
+      category: '뷰티 가전',
+      newPrice: 699000,
+      hotDeal: null,
+      avg: 400000,
+      low: 330000,
+      high: 480000,
+      count: 177,
+      trend: -3,
+      confidence: 'high',
+      buyRange: [330000, 390000],
+      sellRange: [420000, 470000],
+      caption: '컴플리트 구성 · 정품 등록 가능 기준 (11/16 당근 중간값 40만 원)',
+      notes: [
+        '정품·리퍼·병행수입이 섞여 있어요. 정품 등록 이력이나 구매 영수증이 있으면 시세가 5만 원 이상 올라가요.',
+        '노즐 구성이 가격을 크게 갈라요. 컴플리트(6종)와 오리진은 10만 원 넘게 차이 나요.',
+        '컬링 배럴은 소모품이라 마모가 있으면 교체 비용을 빼고 생각하세요.'
+      ],
+      tips: [
+        '시세(40만 원 안팎)보다 30% 이상 싼 매물은 가품·사기 가능성이 커요. 정품 등록 화면을 꼭 받으세요.',
+        '직거래로 흡입력·소음·배럴 회전까지 확인하고 가져오는 게 안전해요.'
+      ],
+      scripts: [
+        { label: '구매자 · 첫 제안', text: '안녕하세요! 정품 등록 이력 있으실까요? 구성품 확인되면 37만 원에 바로 갈 수 있어요.' },
+        { label: '구매자 · 구성 확인', text: '노즐이 몇 개 포함인가요? 케이스와 거치대도 같이 주시는지 궁금해요.' }
+      ]
+    },
+    airpurifier: {
+      emoji: '🌀',
+      name: '공기청정기',
+      category: '생활가전',
+      newPrice: 299000,
+      hotDeal: null,
+      avg: 90000,
+      low: 70000,
+      high: 120000,
+      count: 87,
+      trend: 2,
+      confidence: 'mid',
+      buyRange: [70000, 95000],
+      sellRange: [110000, 140000],
+      caption: 'LG 퓨리케어·삼성 큐브 등 중형 기준 (11/16 중간값 8.6만 원)',
+      notes: [
+        '모델·평형에 따라 3만 원부터 30만 원까지 벌어져요. 모델명(예: AS301DWFA)을 꼭 확인하세요.',
+        '필터는 대부분 교체 대상이에요. 정품 필터 값이 3~8만 원이라 가격에 반영해야 해요.',
+        '필터 교체 알림이 남아 있는지, 냄새·소음은 없는지 물어보세요.'
+      ],
+      tips: [
+        '이사·이민 매물이 가장 싸요. 필터를 새것으로 갈아 끼운 매물이면 10만 원대도 괜찮아요.',
+        '가져오기 전에 필터 커버를 열어 곰팡이·먼지 상태를 직접 확인하세요.'
+      ],
+      scripts: [
+        { label: '구매자 · 첫 제안', text: '안녕하세요! 모델명이 어떻게 되나요? 필터는 언제 교체하셨는지도 궁금해요.' }
+      ]
+    },
+    tripptrapp: {
+      emoji: '🪑',
+      name: '스토케 트립트랩',
+      category: '유아 가구',
+      newPrice: 397600,
+      hotDeal: null,
+      avg: 300000,
+      low: 200000,
+      high: 400000,
+      count: 34,
+      trend: 0,
+      confidence: 'mid',
+      buyRange: [200000, 290000],
+      sellRange: [330000, 390000],
+      caption: '하이체어 단품 기준 · 베이비세트·트레이 포함이면 더 비싸요',
+      notes: [
+        '베이비세트·하네스·트레이가 포함인지에 따라 10만 원 이상 차이 나요.',
+        '정품 각인이 있는지 확인하세요. 카피 제품이 꽤 돌아다녀요.',
+        '내추럴·화이트워시처럼 인기 색은 감가가 적고, 도색 벗겨짐이 있으면 5만 원 정도 빠져요.'
+      ],
+      tips: [
+        '신품은 예약 대기가 길어서 중고 시세가 잘 안 내려요. 25~30만 원대면 빠르게 나가는 편이에요.',
+        '정품 등록을 하면 무상 AS가 남아 있을 수 있어요. 등록 이력과 구매 시기를 물어보세요.'
+      ],
+      scripts: [
+        { label: '구매자 · 첫 제안', text: '안녕하세요! 베이비세트와 트레이도 포함인가요? 흔집 상태 확인되면 27만 원에 가능할까요?' }
+      ]
+    }
+  };
+
+  var CATEGORY_FALLBACK = [
+    { re: /(책|도서|전집|리더스|동화|그림책|위인|문제집)/, name:'도서·전집', emoji:'📚', avg:28000, low:18000, high:45000, newPrice:120000 },
+    { re: /(아이폰|갤럭시|맥북|아이패드|노트북|워치|에어팟|버즈|스위치|플스)/, name:'디지털기기', emoji:'📱', avg:320000, low:180000, high:650000, newPrice:1200000 },
+    { re: /(가습기|청소기|밥솥|공기청정|선풍기|전기|에어프라이|믹서|로봇)/, name:'가전', emoji:'🔌', avg:35000, low:20000, high:60000, newPrice:129000 },
+    { re: /(유모차|카시트|아기|유아|젖병|기저귀|이유식|아이방|범보|바운서)/, name:'육아용품', emoji:'🍼', avg:42000, low:22000, high:78000, newPrice:180000 },
+    { re: /(옷|패딩|점퍼|원피스|스커트|신발|가방|니트|코트)/, name:'의류·잡화', emoji:'👕', avg:15000, low:8000, high:26000, newPrice:59000 }
+  ];
+
+  /* ================= 알바 샘플 ================= */
+  var JOBS = {
+    scam: {
+      label: '재택 검색대행',
+      text: '【재택알바 · 검색대행 모집】\n시급 22,000원 / 하루 2시간 / 월 65만원 보장\n\n· 업무: 쇼핑몰 상품 검색 후 링크 복사, 블로그 배포\n· 초보 가능, 누구나 가능! 컴퓨터만 있으면 OK\n· 나이 무관, 경력 무관\n\n연락: 카톡 오픈채팅 only\n※ 업무 시작 전 보증금 30,000원 (첫 달 후 환급)'
+    },
+    gs25: {
+      label: '동삭동 편의점',
+      text: 'GS25 평택지제더샵점 오전 아르바이트 모집\n\n· 근무지: 평택시 동삭동 더샵지제역센트럴파크 1단지 상가 105호\n· 근무시간: 월~금 09:00~13:00 (요일 협의 가능)\n· 시급: 12,000원 (주휴수당 별도)\n· 업무: 계산, 진열, 매장 정리, 택배 접수 보조\n· 4대보험 가입, 근로계약서 작성\n· 문의: 매장 방문 또는 031-8000-0000'
+    },
+    logistics: {
+      label: '물류센터 단기',
+      text: '[다이소 안성물류센터 단기 모집]\n기간: 11/24(월)~11/29(토)\n시급 13,500원 / 주간조 08:00~17:00\n\n집결: 평택역 07:00 통근버스 출발\n업무: 상품 분류·포장 (서서 하는 업무)\n연락: 010-3000-0000 문자\n\n※ 5일 근무 필수, 중도 하차 시 수당 조정'
+    },
+    account: {
+      label: '계정 대여 재택',
+      text: '온라인 쇼핑몰 상품등록 재택알바\n건당 8,000원 / 하루 5건 가능 / 당일 지급\n\n· 본인 명의 계정 대여 필수 (아이디·비밀번호 전달)\n· 휴대폰 인증번호 전달 필요\n· 초보 환영, 누구나 가능'
+    }
+  };
+
+  /* ================= 탭 전환 ================= */
+  var tabButtons = document.querySelectorAll('.tabbar button');
+  function switchTab(name){
+    var panels = ['price','honey','alba','ledger'];
+    for(var i=0;i<panels.length;i++){
+      var p = $('panel-'+panels[i]);
+      if(p){ p.classList.toggle('on', panels[i] === name); }
+    }
+    for(var j=0;j<tabButtons.length;j++){
+      var b = tabButtons[j];
+      var on = b.getAttribute('data-tab') === name;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if(name === 'ledger'){ renderLedger(); }
+    if(name === 'honey'){ renderAlerts(); }
+  }
+
+  /* ================= 시세 조회 ================= */
+  var currentPrice = null;
+  var dealMode = 'buy';
+
+  function matchPrice(query){
+    var q = String(query || '').replace(/\s+/g,' ').trim();
+    if(!q){ return null; }
+    var keys = Object.keys(PRICES);
+    for(var i=0;i<keys.length;i++){
+      var d = PRICES[keys[i]];
+      var tokens = d.name.replace(/[0-9A-Za-z]*/g,' ').split(/\s+/).filter(function(t){ return t.length>1; });
+      if(q.indexOf(d.name) >= 0){ return d; }
+      var hit = 0;
+      for(var t=0;t<tokens.length;t++){ if(q.indexOf(tokens[t]) >= 0){ hit++; } }
+      if(hit >= Math.max(1, tokens.length-1)){ return d; }
+    }
+    // 키워드 보정
+    if(/노부영|사이트워드|리더스/.test(q)){ return PRICES.nobuyoung; }
+    if(/아이폰\s*15|아이폰15/.test(q)){ return PRICES.iphone15; }
+    if(/가습기/.test(q)){ return PRICES.humidifier; }
+    if(/세이펜/.test(q)){ return PRICES.saipen; }
+
+    for(var c=0;c<CATEGORY_FALLBACK.length;c++){
+      if(CATEGORY_FALLBACK[c].re.test(q)){
+        var f = CATEGORY_FALLBACK[c];
+        return {
+          emoji: f.emoji,
+          name: q.length > 26 ? q.slice(0,26)+'…' : q,
+          category: f.name,
+          newPrice: f.newPrice,
+          hotDeal: null,
+          avg: f.avg,
+          low: f.low,
+          high: f.high,
+          count: 12,
+          trend: 0,
+          confidence: 'low',
+          buyRange: [Math.round(f.low*1.05/1000)*1000, Math.round(f.avg*0.95/1000)*1000],
+          sellRange: [Math.round(f.avg*1.05/1000)*1000, Math.round(f.high*0.85/1000)*1000],
+          caption: f.name + ' 카테고리 평균으로 추정했어요',
+          notes: [
+            '같은 카테고리 매물의 평균값이라 실제 모델에 따라 차이가 커요.',
+            '정확한 시세는 사진이나 정확한 제품명(모델명)으로 다시 조회해 보세요.'
+          ],
+          tips: ['상품명에 용량·색상·구성을 넣으면 시세가 더 정확해져요.'],
+          scripts: [
+            { label:'구매자 · 첫 제안', text:'안녕하세요! 상태 확인하고 싶은데, 혹시 조금 조정 가능할까요?' }
+          ]
+        };
+      }
+    }
+    return {
+      emoji: '🧾',
+      name: q.length > 26 ? q.slice(0,26)+'…' : q,
+      category: '기타',
+      newPrice: 100000,
+      hotDeal: null,
+      avg: 30000,
+      low: 15000,
+      high: 55000,
+      count: 9,
+      trend: 0,
+      confidence: 'low',
+      buyRange: [18000, 28000],
+      sellRange: [32000, 48000],
+      caption: '비슷한 매물이 적어 추정값이에요',
+      notes: [
+        '거래량이 적은 품목이라 시세 편차가 커요.',
+        '같은 제품의 판매 완료 글 3~5개를 직접 보고 평균을 잡는 게 안전해요.'
+      ],
+      tips: ['사진을 올리면 카테고리를 더 정확히 잡을 수 있어요.'],
+      scripts: [
+        { label:'구매자 · 첫 제안', text:'안녕하세요! 혹시 3만 원 선에서 가능할까요?' }
+      ]
+    };
+  }
+
+  function pctOf(v, low, high){
+    var pad = (high - low) * 0.42;
+    var min = low - pad, max = high + pad;
+    var p = (v - min) / (max - min) * 100;
+    return Math.max(3, Math.min(97, p));
+  }
+
+  function skeletonPrice(){
+    return '<div class="card"><div class="skel">'
+      + '<div class="sk-line w40"></div>'
+      + '<div class="sk-line big"></div>'
+      + '<div class="sk-line w70"></div>'
+      + '<div class="sk-line card"></div>'
+      + '<div class="sk-line card"></div>'
+      + '</div></div>';
+  }
+
+  function renderPrice(d, query){
+    var q = String(query || d.name || '').trim();
+    var qShort = q.length > 18 ? q.slice(0, 18) + '…' : q;
+    var discount = Math.round((1 - d.avg / d.newPrice) * 100);
+    var trendTxt = d.trend === 0 ? '변동 없음' : (d.trend > 0 ? '▲ ' + d.trend + '%' : '▼ ' + Math.abs(d.trend) + '%');
+    var trendColor = d.trend > 0 ? '#F04452' : (d.trend < 0 ? '#12B886' : '#8B95A1');
+    var confTxt = d.confidence === 'low' ? '추정' : d.confidence === 'mid' ? '보통' : '정확';
+    var confCls = d.confidence === 'low' ? ' low' : '';
+
+    var html = '';
+    html += '<div class="card result">';
+    html += '<div class="res-head">';
+    html += '<div class="res-emoji">' + d.emoji + '</div>';
+    html += '<div style="min-width:0"><b>' + esc(d.name) + '</b><span class="sub">' + esc(d.category) + ' · 매물 ' + d.count + '건 참고</span></div>';
+    html += '<span class="conf' + confCls + '">' + confTxt + '</span>';
+    html += '</div>';
+
+    html += '<div class="avg-wrap">';
+    html += '<div class="avg-label">중고 평균 시세</div>';
+    html += '<div class="avg-price"><b>' + fmt(d.avg) + '</b><span class="won">원</span><span class="discount">새 상품보다 ' + discount + '% 저렴</span></div>';
+    html += '<div class="avg-caption">' + esc(d.caption) + ' · 최근 30일 <span style="color:' + trendColor + ';font-weight:700">' + trendTxt + '</span></div>';
+    html += '</div>';
+
+    var lowP = pctOf(d.low, d.low, d.high);
+    var highP = pctOf(d.high, d.low, d.high);
+    var avgP = pctOf(d.avg, d.low, d.high);
+    html += '<div class="range">';
+    html += '<div class="range-track">';
+    html += '<div class="range-zone" style="left:' + lowP + '%;width:' + (highP - lowP) + '%"></div>';
+    html += '<div class="range-dot" style="left:' + avgP + '%"></div>';
+    html += '</div>';
+    html += '<div class="range-scale"><span>' + fmt(d.low) + '원</span><span style="color:var(--ink-2);font-weight:800">평균 ' + fmt(d.avg) + '</span><span>' + fmt(d.high) + '원</span></div>';
+    html += '</div>';
+
+    html += '<div class="grid2">';
+    html += '<div class="mini-card buy"><div class="k">살 때 적정가</div><div class="v">' + fmt(d.buyRange[0]) + '~' + fmt(d.buyRange[1]) + '원</div></div>';
+    html += '<div class="mini-card sell"><div class="k">팔 때 적정가</div><div class="v">' + fmt(d.sellRange[0]) + '~' + fmt(d.sellRange[1]) + '원</div></div>';
+    html += '</div>';
+
+    html += '<div class="newline"><span>새 상품 <s>' + fmt(d.newPrice) + '원</s></span>';
+    html += '<span>' + (d.hotDeal ? '핫딜가 <b>' + fmt(d.hotDeal) + '원</b>' : '중고 ' + fmt(d.avg) + '원') + '</span></div>';
+
+    html += '<div class="tips">';
+    for(var i=0;i<d.notes.length;i++){
+      html += '<div class="tip"><i>💡</i><div>' + esc(d.notes[i]) + '</div></div>';
+    }
+    html += '</div>';
+
+    for(var s=0;s<d.scripts.length;s++){
+      html += '<div class="script">';
+      html += '<div class="s-top"><span class="s-label">' + esc(d.scripts[s].label) + '</span>';
+      html += '<button class="copy-btn" type="button" data-action="copy" data-copy="' + esc(d.scripts[s].text) + '">복사</button></div>';
+      html += '<p>' + esc(d.scripts[s].text) + '</p>';
+      html += '</div>';
+    }
+
+    html += '<a class="ext-btn" href="' + esc(daangnSearchUrl(q)) + '" target="_blank" rel="noopener noreferrer" data-action="open-daangn">'
+         +  '<span class="x-ico">🥕</span>'
+         +  '<span class="x-body"><b>당근마켓에서 실제 매물 검색하기</b>'
+         +  '<span>‘' + esc(qShort) + '’ 동삭동 · 거래가능 매물 위주로 검색해요</span></span>'
+         +  '<span class="x-arrow">↗</span>'
+         +  '</a>';
+
+    html += '<div class="deal-box">';
+    html += '<div class="d-title">이 가격에 거래했어요</div>';
+    html += '<div class="seg">';
+    html += '<button type="button" class="' + (dealMode === 'buy' ? 'on' : '') + '" data-action="deal-mode" data-mode="buy">샀어요</button>';
+    html += '<button type="button" class="' + (dealMode === 'sell' ? 'on' : '') + '" data-action="deal-mode" data-mode="sell">팔았어요</button>';
+    html += '</div>';
+    html += '<div class="deal-row">';
+    html += '<input class="input" id="dealPrice" type="text" inputmode="numeric" placeholder="예) 18000">';
+    html += '<button class="btn primary" type="button" data-action="record-deal">절약액 기록</button>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function runPriceQuery(name){
+    var q = String(name || '').trim();
+    if(!q){
+      toast('상품명을 입력하거나 사진을 올려주세요');
+      $('priceInput').focus();
+      return;
+    }
+    var d = matchPrice(q);
+    currentPrice = d;
+    var box = $('priceResult');
+    box.innerHTML = skeletonPrice();
+    box.scrollIntoView({ behavior:'smooth', block:'start' });
+    var btn = $('priceSubmit');
+    btn.disabled = true;
+    setTimeout(function(){
+      box.innerHTML = renderPrice(d, q);
+      btn.disabled = false;
+    }, 700);
+  }
+
+  function recordDeal(){
+    if(!currentPrice){ toast('먼저 시세를 조회해 주세요'); return; }
+    var el = $('dealPrice');
+    if(!el){ return; }
+    var raw = el.value.replace(/[^0-9]/g, '');
+    var actual = parseInt(raw, 10);
+    if(!actual || actual <= 0){ toast('실제 거래 금액을 숫자로 적어주세요'); return; }
+    var d = currentPrice;
+    var saved = 0;
+    var note = '';
+    if(dealMode === 'buy'){
+      saved = d.avg - actual;
+      if(saved >= 0){
+        note = '평균 ' + fmt(d.avg) + '원 대비 ' + fmt(saved) + '원 절약';
+      }else{
+        note = '평균 ' + fmt(d.avg) + '원보다 ' + fmt(-saved) + '원 비싸게 거래';
+      }
+    }else{
+      saved = actual - d.sellRange[0];
+      if(saved >= 0){
+        note = '적정 하한 ' + fmt(d.sellRange[0]) + '원보다 ' + fmt(saved) + '원 더 받음';
+      }else{
+        note = '적정 하한 ' + fmt(d.sellRange[0]) + '원보다 ' + fmt(-saved) + '원 낮게 거래';
+      }
+    }
+    if(saved < 0){ saved = 0; }
+    addRecord({
+      title: d.name + ' ' + (dealMode === 'buy' ? '구매' : '판매') + ' ' + fmt(actual) + '원',
+      amount: saved,
+      type: '중고',
+      memo: note
+    });
+    if(saved > 0){
+      toast(fmt(saved) + '원 아꼈어요! 가계부에 담았어요');
+    }else{
+      toast('기록했어요. 다음엔 적정가 안에서 거래해 봐요');
+    }
+    el.value = '';
+  }
+
+  /* ================= 가계부 ================= */
+  var records = [];
+  var memoryOnly = false;
+
+  function seedRecords(){
+    return [
+      { id:'seed1', date:'2026-11-15', type:'중고', title:'노부영 사이트워드 리더스 18,000원에 구매', amount:147900, memo:'핫딜 165,900원 → 18,000원 (정가 255,000원)' },
+      { id:'seed2', date:'2026-11-16', type:'체험단', title:'쿠팡체험단 일리윤 로션 선정', amount:24900, memo:'제품가 24,900원 그대로 받음' },
+      { id:'seed3', date:'2026-11-16', type:'알바', title:'‘재택 검색대행’ 알바 거름', amount:0, memo:'보증금 요구 + 상호·주소 없음 → 위험' }
+    ];
+  }
+
+  function loadRecords(){
+    var raw = null;
+    try{ raw = localStorage.getItem(STORE_KEY); }catch(e){ memoryOnly = true; }
+    if(!raw){ records = seedRecords(); saveRecords(); return; }
+    try{
+      var arr = JSON.parse(raw);
+      if(Object.prototype.toString.call(arr) === '[object Array]'){ records = arr; }
+      else { records = seedRecords(); }
+    }catch(e){
+      records = seedRecords();
+    }
+  }
+
+  function saveRecords(){
+    if(memoryOnly){ return; }
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(records)); }
+    catch(e){ memoryOnly = true; }
+  }
+
+  function addRecord(rec){
+    rec.id = 'r' + Date.now() + Math.floor(Math.random()*1000);
+    rec.date = rec.date || todayStr();
+    records.unshift(rec);
+    saveRecords();
+    renderLedger();
+  }
+
+  var TYPE_EMOJI = { '중고':'🏷️', '체험단':'🎁', '알바':'🛡️', '기타':'✏️' };
+
+  function renderLedger(){
+    var month = monthStr();
+    var total = 0, savedCount = 0, blocked = 0, allTotal = 0;
+    for(var i=0;i<records.length;i++){
+      var r = records[i];
+      allTotal += Number(r.amount) || 0;
+      if(String(r.date).slice(0,7) !== month){ continue; }
+      total += Number(r.amount) || 0;
+      if((Number(r.amount) || 0) > 0){ savedCount++; }
+      if(r.type === '알바'){ blocked++; }
+    }
+    var shown = total;
+    var label = '이번 달 아낀 돈';
+    if(total === 0 && allTotal > 0){ shown = allTotal; label = '지금까지 아낀 돈'; }
+    var lblEl = $('totalLabel');
+    if(lblEl){ lblEl.textContent = label; }
+
+    $('totalSaved').textContent = fmt(shown);
+    $('statSavedCount').textContent = savedCount + '건';
+    $('statBlockedCount').textContent = blocked + '건';
+
+    var p = Math.min(100, Math.round(shown / MONTHLY_GOAL * 100));
+    $('goalPct').textContent = p + '%';
+    $('goalFill').style.width = p + '%';
+
+    $('recCount').textContent = records.length + '건';
+
+    var html = '';
+    if(!records.length){
+      html = '<div class="empty"><span class="e-emoji">🪙</span>아직 기록이 없어요.<br>시세 판독이나 알바 분석 후<br>바로 담을 수 있어요.</div>';
+    }else{
+      for(var j=0;j<records.length;j++){
+        var rec = records[j];
+        var amt = Number(rec.amount) || 0;
+        html += '<div class="rec">';
+        html += '<div class="r-ico">' + (TYPE_EMOJI[rec.type] || '✏️') + '</div>';
+        html += '<div class="r-body"><b>' + esc(rec.title) + '</b>';
+        if(rec.memo){ html += '<span>' + esc(rec.memo) + '</span>'; }
+        html += '</div>';
+        html += '<div class="r-amt">';
+        if(amt > 0){ html += '<b>+' + fmt(amt) + '원</b>'; }
+        else if(rec.type === '알바'){ html += '<b class="zero">걸러냄</b>'; }
+        else { html += '<b class="zero">0원</b>'; }
+        html += '<span class="tag t-' + esc(rec.type) + '">' + esc(rec.type) + '</span>';
+        html += '</div>';
+        html += '<button class="del" type="button" data-action="del-record" data-id="' + esc(rec.id) + '" aria-label="삭제">✕</button>';
+        html += '</div>';
+      }
+    }
+    $('recList').innerHTML = html;
+  }
+
+  function submitRecord(){
+    var title = $('addTitle').value.trim();
+    var amountRaw = $('addAmount').value.replace(/[^0-9]/g, '');
+    var amount = parseInt(amountRaw, 10) || 0;
+    var type = $('addType').value;
+    var memo = $('addMemo').value.trim();
+    if(!title){ toast('무엇으로 아꼈는지 적어주세요'); $('addTitle').focus(); return; }
+    if(!amountRaw && type !== '알바'){ toast('아낀 금액을 적어주세요'); $('addAmount').focus(); return; }
+    addRecord({ title:title, amount:amount, type:type, memo:memo });
+    $('addTitle').value = '';
+    $('addAmount').value = '';
+    $('addMemo').value = '';
+    toast('기록을 저장했어요');
+  }
+
+  /* ================= 알바 분석 ================= */
+  function numOf(s){
+    var clean = String(s).replace(/,/g, '');
+    return clean.indexOf('.') >= 0 ? parseFloat(clean) : parseInt(clean, 10);
+  }
+
+  function findWage(flat){
+    var m = flat.match(/(?:시급|시간당|時給)[^0-9]{0,8}([0-9][0-9,\.]*)\s*(만\s*원|원)?/);
+    if(!m){ return null; }
+    var v = numOf(m[1]);
+    if(isNaN(v)){ return null; }
+    if(m[2] && m[2].indexOf('만') >= 0){ v = v * 10000; }
+    else if(v < 1000){ v = v * 1000; }
+    if(v < 1000 || v > 500000){ return null; }
+    return Math.round(v);
+  }
+
+  function findMonthly(flat){
+    var m = flat.match(/(?:월급|매월|한\s*달|월)\s*[:：]?\s*([0-9][0-9,\.]*)\s*(만\s*원|원)?/);
+    if(!m){ return null; }
+    var v = numOf(m[1]);
+    if(isNaN(v)){ return null; }
+    if(m[2] && m[2].indexOf('만') >= 0){ v = v * 10000; }
+    else if(v < 1000){ v = v * 10000; }
+    if(v < 100000 || v > 20000000){ return null; }
+    return Math.round(v);
+  }
+
+  function analyzeJob(text){
+    var flat = String(text || '').replace(/\r/g, ' ').replace(/\s+/g, ' ').trim();
+    var checks = [];
+    var score = 100;
+
+    function add(status, label, detail, deduct, q){
+      checks.push({ status:status, label:label, detail:detail, q:q || '' });
+      score -= (deduct || 0);
+    }
+
+    /* 1. 시급 */
+    var wage = findWage(flat);
+    if(wage){
+      var ratio = wage / MIN_WAGE;
+      if(wage < MIN_WAGE){
+        add('danger', '최저임금 미달',
+          '시급 ' + fmt(wage) + '원은 2026년 최저시급 ' + fmt(MIN_WAGE) + '원보다 낮아요. 신고 대상이에요.', 40,
+          '시급이 최저임금 ' + fmt(MIN_WAGE) + '원보다 낮은데, 4대보험·주휴수당 포함 기준인가요?');
+      }else if(ratio >= 1.8){
+        add('danger', '시세 대비 과다 시급',
+          '시급 ' + fmt(wage) + '원은 최저시급의 ' + ratio.toFixed(1) + '배예요. 동네 일반 알바(11,000~13,500원)보다 크게 높아 미끼일 가능성이 커요.', 30,
+          '시급 ' + fmt(wage) + '원은 세금·4대보험 포함인가요? 실제 실수령액이 얼마인가요?');
+      }else if(ratio >= 1.3){
+        add('warn', '시급이 높은 편',
+          '시급 ' + fmt(wage) + '원은 최저시급의 ' + Math.round(ratio*100) + '% 수준이에요. 업무 강도와 4대보험 포함 여부를 확인하세요.', 8,
+          '시급 ' + fmt(wage) + '원에 4대보험·주휴수당도 포함인가요?');
+      }else{
+        add('ok', '시급 적정',
+          '시급 ' + fmt(wage) + '원 — 2026년 최저시급 대비 ' + Math.round(ratio*100) + '% 수준이에요.');
+      }
+    }else{
+      add('unknown', '시급 정보 없음',
+        '공고에 시급이 적혀 있지 않아요. 급여 조건부터 물어보세요.', 6,
+        '시급이 얼마이고, 하루 몇 시간 근무인가요?');
+    }
+
+    /* 2. 시급·월급 일치 */
+    var monthly = findMonthly(flat);
+    if(wage && monthly){
+      var hours = monthly / wage;
+      if(hours < 60){
+        add('warn', '시급과 월급이 안 맞아요',
+          '월 ' + fmt(monthly) + '원은 시급 ' + fmt(wage) + '원 기준 한 달 약 ' + Math.round(hours) + '시간(주 ' + (hours/4.345).toFixed(1) + '시간)에 불과해요. 높은 시급만 강조한 미끼일 수 있어요.', 12,
+          '월 ' + fmt(monthly) + '원은 주 몇 시간 근무 기준인가요? 실제 근무 시간표를 알려주세요.');
+      }else{
+        add('ok', '급여 계산이 맞아요',
+          '시급 × 근무시간이 월 급여와 크게 다르지 않아요.');
+      }
+    }
+
+    /* 3. 사업장·근무지 */
+    var hasBiz = /(㈜|\(주\)|주식회사|점(?![심])|마트|편의점|카페|물류센터|센터|어린이집|학원|병원|스토어|GS25|CU|이마트|다이소|할로하우디|벌툰)/.test(flat);
+    var hasAddr = /(평택|안성|송도|동삭동|지제동|모곡동|칠괴동|소사동|평택동|[가-힣]{2,}동(?![가-힣])|[가-힣]{2,}읍(?![가-힣])|[가-힣]{2,}면(?![가-힣])|[가-힣]{2,}로\s?\d|[가-힣]{2,}길\s?\d|상가\s?\d)/.test(flat);
+    if(hasBiz && hasAddr){
+      add('ok', '사업장·근무지 명시',
+        '상호와 근무지가 공고에 나와 있어요.');
+    }else if(hasBiz || hasAddr){
+      add('warn', '사업장 정보 일부 누락',
+        (hasBiz ? '상호는 있지만 정확한 근무지 주소가 없어요.' : '주소는 있지만 사업장 이름이 없어요.') + ' 방문 전에 확인하세요.', 12,
+        '정확한 사업장 이름과 근무지 주소를 알려주실 수 있나요?');
+    }else{
+      add('danger', '상호명·주소 없음',
+        '공고에 사업장 이름도, 근무지 주소도 없어요. 정상 업장은 보통 둘 다 밝혀요.', 22,
+        '사업장 상호와 주소가 어떻게 되나요? 사업자등록번호도 확인할 수 있을까요?');
+    }
+
+    /* 4. 계정·명의 요구 */
+    var acctRe = /(계정\s*(대여|판매|제공|전달)|아이디\s*(대여|공유|전달)|비밀번호\s*(전달|공유)|명의\s*(대여|차용|도용)|인증번호|OTP|otp|대포|통장\s*(대여|판매)|카드\s*대여|본인\s*명의)/;
+    if(acctRe.test(flat)){
+      add('danger', '본인 계정·명의 요구',
+        '아이디·비밀번호·인증번호를 넘기라는 요구는 대부분 사기예요. 통장·계정 대여는 형사처벌 대상이에요.', 38,
+        '제 계정 대신 회사 계정으로 진행할 수는 없나요? 왜 제 명의가 필요한가요?');
+    }else{
+      add('ok', '계정·명의 요구 없음',
+        '내 계정이나 명의를 넘기라는 말은 없어요.');
+    }
+
+    /* 5. 선입금 */
+    var feeRe = /(보증금|예치금|체험비|교육비|가입비|선입금|선결제|보험료|수수료\s*선|보증\s*금)/;
+    if(feeRe.test(flat)){
+      add('danger', '돈을 먼저 내라는 조건',
+        '시작 전 보증금·교육비를 요구하는 곳은 거의 100% 사기예요. 환급도 거의 안 됩니다.', 32,
+        '보증금은 왜 필요한가요? 환급 시점과 방법을 서면으로 받을 수 있나요?');
+    }else{
+      add('ok', '선입금 요구 없음',
+        '일을 시작하기 전 돈을 내라는 조건은 없어요.');
+    }
+
+    /* 6. 집결·차량 이동 */
+    if(/(집결|모여서|차량\s*(이동|지원)|통근\s*버스|픽업\s*(후|장소))/.test(flat)){
+      add('warn', '집결·차량 이동 있음',
+        '집결 장소에서 차로 이동하는 공고예요. 작업장 주소와 이동 시간을 미리 확인하세요.', 8,
+        '집결 장소와 실제 작업장 주소, 이동에 걸리는 시간을 알려주세요.');
+    }else{
+      add('ok', '근무지로 바로 출근',
+        '따로 집결하지 않고 근무지에서 시작해요.');
+    }
+
+    /* 7. 과장 홍보 문구 */
+    if(/(고수익|누구나\s*가능|초보\s*(환영|가능)|나이\s*무관|경력\s*무관|쉬운\s*일|간단한\s*업무|하루\s*\d+만|돈\s*버는|부업)/.test(flat)){
+      add('warn', '지나친 홍보 문구',
+        '"누구나 가능", "초보 환영" 같은 문구로 지원을 부추기는 공고는 조건이 실제와 다른 경우가 많아요.', 10,
+        '하루에 실제로 어떤 일을 몇 건 처리하는지 구체적인 예시를 알려주세요.');
+    }else{
+      add('ok', '과장 문구 없음',
+        '지원을 부추기는 과한 문구는 없어요.');
+    }
+
+    /* 8. 연락처 */
+    var hasPhone = /(0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4})/.test(flat);
+    var chatOnly = /(카톡|카카오톡|오픈채팅|텔레그램|텔레\b)/.test(flat);
+    if(hasPhone){
+      add('ok', '연락처 확인 가능',
+        '전화번호가 있어 직접 통화로 확인할 수 있어요.');
+    }else if(chatOnly){
+      add('danger', '연락처가 메신저뿐',
+        '카톡·텔레그램으로만 연락받는 공고는 책임 소재가 사라져요. 문제가 생겨도 신고가 어려워요.', 18,
+        '전화로 통화 가능한 번호와 사업장 주소를 알려주실 수 있나요?');
+    }else{
+      add('warn', '연락처 불명확',
+        '연락할 번호가 보이지 않아요. 지원 전에 통화 가능한 번호를 받으세요.', 8,
+        '통화 가능한 연락처를 알려주실 수 있나요?');
+    }
+
+    /* 9. 근무 요일·시간 */
+    var hasDays = /(월\s*[~-]\s*금|월요일|화요일|주\s*[1-6]\s*일|평일|주말|격일|매일|요일\s*협의)/.test(flat);
+    var hasTime = /(\d{1,2}\s*[:시]\s*\d{0,2}\s*[~-]\s*\d{1,2}\s*[:시]|오전|오후)/.test(flat);
+    if(hasDays && hasTime){
+      add('ok', '근무 요일·시간 명시',
+        '언제 몇 시부터 일하는지 공고에 나와 있어요.');
+    }else{
+      add('warn', '근무 조건 불명확',
+        '요일과 시간이 분명히 적혀 있지 않아 실제 근무 조건과 다를 수 있어요.', 12,
+        '근무 요일과 시간을 정확히 알려주세요. 주말 근무도 있나요?');
+    }
+
+    /* 10. 계약·보험 */
+    if(/(4대\s*보험|사대보험|근로계약서|주휴수당|국민연금|고용보험)/.test(flat)){
+      add('ok', '계약·보험 언급 있음',
+        '근로계약서나 4대보험 이야기가 나와 있어요.');
+    }else{
+      add('unknown', '계약 조건 미확인',
+        '4대보험·근로계약서 언급이 없어요. 지원 전에 꼭 물어보세요.', 5,
+        '근로계약서 작성과 4대보험 가입이 가능한가요?');
+    }
+
+    score = Math.max(6, Math.min(100, Math.round(score)));
+    var verdict, color, badgeBg, badgeColor, summary;
+    if(score >= 80){
+      verdict = '안전'; color = '#12B886'; badgeBg = '#E7F8F1'; badgeColor = '#0B8A66';
+      summary = '크게 걸리는 신호가 없어요. 그래도 근로계약서와 4대보험은 꼭 확인하세요.';
+    }else if(score >= 55){
+      verdict = '주의'; color = '#F5A623'; badgeBg = '#FFF6E5'; badgeColor = '#A96A00';
+      summary = '몇 가지 확인이 필요해요. 지원 전에 아래 질문을 그대로 물어보세요.';
+    }else{
+      verdict = '위험'; color = '#F04452'; badgeBg = '#FFEDEF'; badgeColor = '#D62C3C';
+      summary = '위험 신호가 여러 개예요. 이 공고는 거르는 걸 추천해요.';
+    }
+
+    var questions = [];
+    for(var i=0;i<checks.length;i++){
+      if(checks[i].status !== 'ok' && checks[i].q){ questions.push(checks[i].q); }
+    }
+    questions.push('근로계약서 작성과 4대보험 가입이 가능한가요?');
+    questions.push('주휴수당은 별도로 지급되나요?');
+    // 중복 제거
+    var uniq = [];
+    for(var q2=0;q2<questions.length;q2++){
+      if(uniq.indexOf(questions[q2]) < 0){ uniq.push(questions[q2]); }
+    }
+    questions = uniq.slice(0, 6);
+
+    return { score:score, verdict:verdict, color:color, badgeBg:badgeBg, badgeColor:badgeColor, summary:summary, checks:checks, questions:questions };
+  }
+
+  var currentJob = null;
+
+  function skeletonAlba(){
+    return '<div class="card"><div class="skel">'
+      + '<div class="sk-line card"></div>'
+      + '<div class="sk-line w70"></div>'
+      + '<div class="sk-line"></div>'
+      + '<div class="sk-line w40"></div>'
+      + '</div></div>';
+  }
+
+  function iconOf(status){
+    if(status === 'ok'){ return '✓'; }
+    if(status === 'warn'){ return '!'; }
+    if(status === 'danger'){ return '✕'; }
+    return '?';
+  }
+
+  function renderAlba(res, rawText){
+    var firstLine = String(rawText || '').split('\n')[0].replace(/[#\[\]【】]/g, '').trim();
+    if(firstLine.length > 28){ firstLine = firstLine.slice(0, 28) + '…'; }
+    var jobName = firstLine || '이 공고';
+
+    var html = '';
+    html += '<div class="card result">';
+    html += '<div class="verdict-head">';
+    html += '<div class="ring" style="--ring-p:' + res.score + ';--ring-color:' + res.color + '">'
+         +  '<div class="ring-in"><b>' + res.score + '</b><span>/100</span></div></div>';
+    html += '<div class="verdict-txt">';
+    html += '<span class="v-badge" style="background:' + res.badgeBg + ';color:' + res.badgeColor + '">위험도 ' + res.verdict + '</span>';
+    html += '<b>' + esc(jobName) + '</b>';
+    html += '<p>' + esc(res.summary) + '</p>';
+    html += '</div></div>';
+
+    html += '<div class="checks">';
+    for(var i=0;i<res.checks.length;i++){
+      var c = res.checks[i];
+      html += '<div class="chk st-' + c.status + '">';
+      html += '<div class="c-ico">' + iconOf(c.status) + '</div>';
+      html += '<div class="c-body"><b>' + esc(c.label) + '</b><span>' + esc(c.detail) + '</span></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    if(res.verdict !== '안전'){
+      html += '<div class="safe-note">계정·통장·인증번호를 넘기라는 요구는 형사처벌 대상이에요. 돈을 먼저 내라는 곳은 사기로 보고 112에 신고할 수 있고, 노동 상담은 1350이에요.</div>';
+    }
+
+    var qText = '';    for(var q=0;q<res.questions.length;q++){
+      qText += (q+1) + '. ' + res.questions[q] + '\n';
+    }
+    html += '<div class="qcard">';
+    html += '<div class="q-title"><b>지원 전 확인 질문</b>';
+    html += '<button class="copy-btn" type="button" data-action="copy" data-copy="' + esc(qText.trim()).replace(/\n/g, '&#10;') + '">전체 복사</button></div>';
+    html += '<ol>';
+    for(var k=0;k<res.questions.length;k++){
+      html += '<li>' + esc(res.questions[k]) + '</li>';
+    }
+    html += '</ol></div>';
+
+    if(res.verdict !== '안전'){
+      html += '<button class="btn ghost" type="button" data-action="skip-job" style="margin-top:12px;">이 알바 거르고 가계부에 남기기</button>';
+    }
+
+    html += '<a class="ext-btn mint" href="' + DAANGN_JOBS_URL + '" target="_blank" rel="noopener noreferrer" data-action="open-daangn-jobs">'
+         +  '<span class="x-ico">💼</span>'
+         +  '<span class="x-body"><b>동삭동 당근알바 실제 공고 보러가기</b>'
+         +  '<span>당근알바에서 동네 공고를 직접 확인해요</span></span>'
+         +  '<span class="x-arrow">↗</span>'
+         +  '</a>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function runAnalyze(){
+    var text = $('albaText').value.trim();
+    if(text.length < 12){
+      toast('공고 내용을 붙여넣어 주세요');
+      $('albaText').focus();
+      return;
+    }
+    var box = $('albaResult');
+    box.innerHTML = skeletonAlba();
+    box.scrollIntoView({ behavior:'smooth', block:'start' });
+    var btn = $('albaSubmit');
+    btn.disabled = true;
+    setTimeout(function(){
+      var res = analyzeJob(text);
+      currentJob = { res:res, text:text };
+      box.innerHTML = renderAlba(res, text);
+      btn.disabled = false;
+    }, 750);
+  }
+
+  /* ================= 꿀매물 알림 ================= */
+  var alerts = [];
+  var alertMemoryOnly = false;
+  var alertThr = '30';
+  var MAX_ALERTS = 20;
+
+  function seedAlerts(){
+    return [
+      { id:'a-seed-1', name:'노부영 사이트워드 리더스', mode:'pct', thr:40, target:0, on:true, emoji:'📚' },
+      { id:'a-seed-2', name:'아기 가습기', mode:'pct', thr:40, target:0, on:true, emoji:'💧' }
+    ];
+  }
+
+  function normName(s){ return String(s || '').replace(/\s+/g, ' ').trim(); }
+
+  function hashOf(s){
+    var str = String(s || '');
+    var h = 0;
+    for(var i=0;i<str.length;i++){ h = (h * 31 + str.charCodeAt(i)) % 99991; }
+    return h;
+  }
+
+  function loadAlerts(){
+    var raw = null;
+    try{ raw = localStorage.getItem(ALERT_KEY); }catch(e){ alertMemoryOnly = true; }
+    if(!raw){ alerts = seedAlerts(); saveAlerts(); return; }
+    try{
+      var arr = JSON.parse(raw);
+      if(Object.prototype.toString.call(arr) === '[object Array]'){ alerts = arr; }
+      else { alerts = seedAlerts(); }
+    }catch(e){
+      alerts = seedAlerts();
+    }
+    var kept = [];
+    for(var i=0;i<alerts.length;i++){
+      var a = alerts[i];
+      if(!a || !a.name){ continue; }
+      a.name = normName(a.name);
+      a.mode = a.mode === 'price' ? 'price' : 'pct';
+      a.thr = Number(a.thr) || 30;
+      a.target = Number(a.target) || 0;
+      a.on = a.on !== false;
+      a.emoji = a.emoji || '🔔';
+      if(!a.id){ a.id = 'a' + i + '-' + hashOf(a.name); }
+      kept.push(a);
+    }
+    alerts = kept;
+  }
+
+  function saveAlerts(){
+    if(alertMemoryOnly){ return; }
+    try{ localStorage.setItem(ALERT_KEY, JSON.stringify(alerts)); }
+    catch(e){ alertMemoryOnly = true; }
+  }
+
+  function alertAvgOf(a){
+    var d = matchPrice(a && a.name ? a.name : '');
+    return d && d.avg ? d.avg : 30000;
+  }
+
+  function alertCrit(a){
+    if(a.mode === 'price'){ return '희망가 ' + fmt(a.target) + '원 이하'; }
+    return '평균보다 ' + (Number(a.thr) || 30) + '% 이상 쌀 때';
+  }
+
+  function dealOf(a){
+    var avg = alertAvgOf(a);
+    var price;
+    if(a.mode === 'price' && Number(a.target) > 0){
+      price = Number(a.target);
+    }else{
+      // 기준을 넘긴 매물이 뜨는 상황을 보여준다. 이름이 같으면 늘 같은 값이 나오게 0~5%p만 더 준다.
+      var p = (Number(a.thr) || 30) + (hashOf(a.name) % 6);
+      price = Math.round(avg * (1 - p / 100) / 1000) * 1000;
+    }
+    if(price < 1000){ price = 1000; }
+    var drop = avg > 0 ? Math.round((1 - price / avg) * 100) : 0;
+    return { avg:avg, price:price, drop:drop };
+  }
+
+  function nowHM(){
+    var d = new Date();
+    var h = String(d.getHours()); if(h.length < 2){ h = '0' + h; }
+    var m = String(d.getMinutes()); if(m.length < 2){ m = '0' + m; }
+    return h + ':' + m;
+  }
+
+  function renderAlerts(){
+    var cntEl = $('alCount');
+    if(cntEl){ cntEl.textContent = alerts.length + '개'; }
+    var list = $('alList');
+    if(!list){ return; }
+    var html = '';
+    if(!alerts.length){
+      html = '<div class="empty"><span class="e-emoji">🔔</span>아직 등록한 알림이 없어요.<br>위에서 물건 이름만 넣으면<br>꿀매물이 뜰 때 알려드릴게요.</div>';
+    }else{
+      for(var i=0;i<alerts.length;i++){
+        var a = alerts[i];
+        if(!a || !a.name){ continue; }
+        html += '<div class="al-row' + (a.on ? '' : ' off') + '">';
+        html += '<div class="al-ico" aria-hidden="true">' + esc(a.emoji || '🔔') + '</div>';
+        html += '<div class="al-body"><b>' + esc(a.name) + '</b><span>' + esc(alertCrit(a)) + ' · 평균 ' + fmt(alertAvgOf(a)) + '원</span></div>';
+        html += '<button class="sw' + (a.on ? ' on' : '') + '" type="button" role="switch" aria-checked="' + (a.on ? 'true' : 'false') + '" aria-label="' + esc(a.name) + ' 알림 ' + (a.on ? '끄기' : '켜기') + '" data-action="al-toggle" data-id="' + esc(a.id) + '"></button>';
+        html += '<button class="al-del" type="button" data-action="al-del" data-id="' + esc(a.id) + '" aria-label="알림 삭제">✕</button>';
+        html += '</div>';
+      }
+    }
+    list.innerHTML = html;
+    renderFeed();
+  }
+
+  function renderFeed(){
+    var box = $('alFeed');
+    if(!box){ return; }
+    var live = [];
+    for(var i=0;i<alerts.length;i++){
+      if(alerts[i] && alerts[i].name && alerts[i].on){ live.push(alerts[i]); }
+    }
+    if(!live.length){
+      var msg = alerts.length
+        ? '켜둔 알림이 없어요.<br>위에서 알림을 다시 켜면 여기에 보여드려요.'
+        : '알림을 등록하면<br>어떤 매물이 걸리는지<br>여기서 바로 보여드려요.';
+      box.innerHTML = '<div class="empty"><span class="e-emoji">🍯</span>' + msg + '</div>';
+    }else{
+      var html = '';
+      for(var j=0;j<live.length;j++){
+        var a = live[j];
+        var d = dealOf(a);
+        var mins = 1 + (hashOf(a.id + a.name) % 9);
+        var ago = mins <= 2 ? '방금 전' : mins + '분 전';
+        var shortName = a.name.length > 16 ? a.name.slice(0, 16) + '…' : a.name;
+        var critShort = a.mode === 'price' ? ('희망가 ' + fmt(a.target) + '원') : ('내 기준 −' + (Number(a.thr) || 30) + '%');
+        html += '<div class="feed-card">';
+        html += '<div class="feed-top"><span class="feed-live"></span>방금 뜬 꿀매물!<span class="feed-ago">' + ago + '</span></div>';
+        html += '<div class="feed-name">' + esc(a.name) + '</div>';
+        html += '<div class="feed-price"><b>' + fmt(d.price) + '</b><span class="won">원</span>';
+        if(d.drop > 0){ html += '<span class="feed-drop">평균보다 ' + d.drop + '% ↓</span>'; }
+        html += '</div>';
+        html += '<div class="feed-meta">평균 ' + fmt(d.avg) + '원 · ' + esc(critShort) + ' 충족</div>';
+        html += '<a class="ext-btn" href="' + esc(daangnSearchUrl(a.name)) + '" target="_blank" rel="noopener noreferrer" data-action="open-daangn-feed" data-q="' + esc(a.name) + '">'
+             +  '<span class="x-ico">🥕</span>'
+             +  '<span class="x-body"><b>당근에서 이 매물 찾아보기</b><span>‘' + esc(shortName) + '’ 동삭동 · 거래가능 매물 위주로 검색해요</span></span>'
+             +  '<span class="x-arrow">↗</span>'
+             +  '</a>';
+        html += '</div>';
+      }
+      box.innerHTML = html;
+    }
+    var tEl = $('feedTime');
+    if(tEl){ tEl.textContent = live.length ? '오늘 ' + nowHM() + ' 기준' : '대기 중'; }
+  }
+
+  function setThr(v){
+    alertThr = String(v || '30');
+    var grid = $('alThrGrid');
+    if(grid){
+      var btns = grid.querySelectorAll('button');
+      for(var i=0;i<btns.length;i++){
+        btns[i].classList.toggle('on', btns[i].getAttribute('data-thr') === alertThr);
+      }
+    }
+    var wrap = $('alCustomWrap');
+    if(wrap){ wrap.style.display = alertThr === 'custom' ? 'flex' : 'none'; }
+    if(alertThr === 'custom' && $('alCustom')){ $('alCustom').focus(); }
+  }
+
+  function addAlert(){
+    var nameEl = $('alName');
+    var name = normName(nameEl ? nameEl.value : '');
+    if(!name){ toast('알림 걸 물건 이름을 적어주세요'); if(nameEl){ nameEl.focus(); } return; }
+    if(alerts.length >= MAX_ALERTS){ toast('알림은 ' + MAX_ALERTS + '개까지 등록할 수 있어요'); return; }
+
+    var mode = 'pct';
+    var thr = Number(alertThr) || 30;
+    var target = 0;
+    var avg = alertAvgOf({ name:name });
+    if(alertThr === 'custom'){
+      mode = 'price';
+      var raw = $('alCustom') ? String($('alCustom').value).replace(/[^0-9]/g, '') : '';
+      target = parseInt(raw, 10) || 0;
+      if(!target){ toast('희망가를 숫자로 적어주세요'); if($('alCustom')){ $('alCustom').focus(); } return; }
+      if(target >= avg){ toast('평균 ' + fmt(avg) + '원보다 낮게 잡아야 알림이 와요'); return; }
+    }
+
+    var dup = null;
+    for(var i=0;i<alerts.length;i++){
+      if(normName(alerts[i].name) === name){ dup = alerts[i]; break; }
+    }
+    if(dup){
+      dup.mode = mode; dup.thr = thr; dup.target = target; dup.on = true;
+      saveAlerts(); renderAlerts();
+      toast('이미 등록한 물건이라 알림 기준만 바꿨어요');
+      return;
+    }
+
+    var d = matchPrice(name);
+    alerts.unshift({
+      id: 'a' + Date.now() + Math.floor(Math.random() * 1000),
+      name: name, mode: mode, thr: thr, target: target, on: true,
+      emoji: d ? d.emoji : '🔔'
+    });
+    saveAlerts();
+    renderAlerts();
+    if(nameEl){ nameEl.value = ''; }
+    var clr = $('alClear');
+    if(clr){ clr.classList.remove('on'); }
+    if($('alCustom')){ $('alCustom').value = ''; }
+    setThr('30');
+    toast('🔔 ‘' + (name.length > 12 ? name.slice(0, 12) + '…' : name) + '’ 알림을 등록했어요');
+  }
+
+  /* ================= 이벤트 ================= */
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    var el = t.closest ? t.closest('[data-action]') : null;
+    if(!el){ return; }
+    var action = el.getAttribute('data-action');
+
+    if(action === 'tab'){
+      switchTab(el.getAttribute('data-tab'));
+      return;
+    }
+
+    if(action === 'sample-price'){
+      var key = el.getAttribute('data-key');
+      var d = PRICES[key];
+      if(!d){ return; }
+      var chips = document.querySelectorAll('#priceChips .chip');
+      for(var i=0;i<chips.length;i++){ chips[i].classList.remove('on'); }
+      el.classList.add('on');
+      $('priceInput').value = d.name;
+      $('priceClear').classList.add('on');
+      runPriceQuery(d.name);
+      return;
+    }
+
+    if(action === 'query-price'){
+      runPriceQuery($('priceInput').value);
+      return;
+    }
+
+    if(action === 'copy'){
+      copyText(el.getAttribute('data-copy'), el);
+      return;
+    }
+
+    if(action === 'open-daangn'){
+      var inputEl = $('priceInput');
+      var searchQ = inputEl ? inputEl.value.trim() : '';
+      if(!searchQ){
+        if(e.preventDefault){ e.preventDefault(); }
+        toast('먼저 상품명을 입력하거나 샘플을 골라주세요');
+        if(inputEl){ inputEl.focus(); }
+        return;
+      }
+      var url = daangnSearchUrl(searchQ);
+      el.setAttribute('href', url);
+      openExternal(url, e);
+      return;
+    }
+
+    if(action === 'open-daangn-jobs'){
+      openExternal(DAANGN_JOBS_URL, e);
+      return;
+    }
+
+    if(action === 'al-sample'){
+      var ad = PRICES[el.getAttribute('data-key')];
+      if(!ad){ return; }
+      if($('alName')){ $('alName').value = ad.name; }
+      if($('alClear')){ $('alClear').classList.add('on'); }
+      var aChips = document.querySelectorAll('#alChips .chip');
+      for(var ac=0;ac<aChips.length;ac++){ aChips[ac].classList.remove('on'); }
+      el.classList.add('on');
+      return;
+    }
+
+    if(action === 'al-thr'){
+      setThr(el.getAttribute('data-thr'));
+      return;
+    }
+
+    if(action === 'al-add'){
+      addAlert();
+      return;
+    }
+
+    if(action === 'al-toggle'){
+      var tid = el.getAttribute('data-id');
+      for(var tg=0;tg<alerts.length;tg++){
+        if(alerts[tg].id === tid){
+          alerts[tg].on = !alerts[tg].on;
+          saveAlerts(); renderAlerts();
+          toast(alerts[tg].on ? '알림을 다시 켰어요' : '알림을 잠시 꺼둘게요');
+          return;
+        }
+      }
+      return;
+    }
+
+    if(action === 'al-del'){
+      var dlId = el.getAttribute('data-id');
+      for(var dk=0;dk<alerts.length;dk++){
+        if(alerts[dk].id === dlId){
+          if(window.confirm('‘' + alerts[dk].name + '’ 알림을 지울까요?')){
+            alerts.splice(dk, 1);
+            saveAlerts(); renderAlerts();
+            toast('알림을 지웠어요');
+          }
+          return;
+        }
+      }
+      return;
+    }
+
+    if(action === 'open-daangn-feed'){
+      var fq = el.getAttribute('data-q') || '';
+      if(!fq){ if(e.preventDefault){ e.preventDefault(); } return; }
+      var furl = daangnSearchUrl(fq);
+      el.setAttribute('href', furl);
+      openExternal(furl, e);
+      return;
+    }
+
+    if(action === 'deal-mode'){
+      dealMode = el.getAttribute('data-mode');
+      var seg = el.parentNode;
+      var kids = seg.querySelectorAll('button');
+      for(var s=0;s<kids.length;s++){ kids[s].classList.remove('on'); }
+      el.classList.add('on');
+      return;
+    }
+
+    if(action === 'record-deal'){
+      recordDeal();
+      return;
+    }
+
+    if(action === 'sample-alba'){
+      var jkey = el.getAttribute('data-key');
+      var job = JOBS[jkey];
+      if(!job){ return; }
+      var jchips = document.querySelectorAll('#albaChips .chip');
+      for(var j=0;j<jchips.length;j++){ jchips[j].classList.remove('on'); }
+      el.classList.add('on');
+      $('albaText').value = job.text;
+      runAnalyze();
+      return;
+    }
+
+    if(action === 'analyze'){
+      runAnalyze();
+      return;
+    }
+
+    if(action === 'skip-job'){
+      if(!currentJob){ return; }
+      var r = currentJob.res;
+      var first = String(currentJob.text).split('\n')[0].replace(/[#\[\]【】]/g, '').trim();
+      if(first.length > 24){ first = first.slice(0, 24) + '…'; }
+      var flags = r.checks.filter(function(c){ return c.status === 'danger'; }).map(function(c){ return c.label; });
+      if(!flags.length){
+        flags = r.checks.filter(function(c){ return c.status === 'warn'; }).map(function(c){ return c.label; });
+      }
+      addRecord({
+        title: '‘' + first + '’ 알바 거름',
+        amount: 0,
+        type: '알바',
+        memo: '위험도 ' + r.verdict + ' (' + r.score + '점) — ' + flags.slice(0, 2).join(', ')
+      });
+      toast('가계부에 남겼어요. 잘 거르셨어요!');
+      switchTab('ledger');
+      return;
+    }
+
+    if(action === 'add-record'){
+      submitRecord();
+      return;
+    }
+
+    if(action === 'del-record'){
+      var id = el.getAttribute('data-id');
+      for(var k=0;k<records.length;k++){
+        if(records[k].id === id){
+          if(window.confirm('이 기록을 지울까요?')){
+            records.splice(k,1);
+            saveRecords();
+            renderLedger();
+            toast('기록을 지웠어요');
+          }
+          return;
+        }
+      }
+      return;
+    }
+  });
+
+  /* 시세 입력 */
+  var priceInput = $('priceInput');
+  priceInput.addEventListener('input', function(){
+    $('priceClear').classList.toggle('on', priceInput.value.length > 0);
+  });
+  priceInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); runPriceQuery(priceInput.value); }
+  });
+  $('priceClear').addEventListener('click', function(){
+    priceInput.value = '';
+    $('priceClear').classList.remove('on');
+    priceInput.focus();
+  });
+
+  /* 꿀매물 입력 */
+  var alNameInput = $('alName');
+  if(alNameInput){
+    alNameInput.addEventListener('input', function(){
+      $('alClear').classList.toggle('on', alNameInput.value.length > 0);
+    });
+    alNameInput.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); addAlert(); }
+    });
+  }
+  if($('alClear')){
+    $('alClear').addEventListener('click', function(){
+      $('alName').value = '';
+      $('alClear').classList.remove('on');
+      $('alName').focus();
+    });
+  }
+  if($('alCustom')){
+    $('alCustom').addEventListener('input', function(){
+      var v = String($('alCustom').value).replace(/[^0-9]/g, '');
+      if(v !== $('alCustom').value){ $('alCustom').value = v; }
+    });
+    $('alCustom').addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); addAlert(); }
+    });
+  }
+
+  /* 사진 업로드 · 시세 */
+  $('priceUploader').addEventListener('click', function(){ $('pricePhoto').click(); });
+  $('pricePhoto').addEventListener('change', function(e){
+    var f = e.target.files && e.target.files[0];
+    if(!f){ return; }
+    var url = URL.createObjectURL(f);
+    var up = $('priceUploader');
+    up.classList.add('has-file');
+    $('priceUploaderIcon').innerHTML = '<img class="thumb" src="' + url + '" alt="상품 사진">';
+    $('priceUploaderTitle').textContent = '사진이 올라갔어요';
+    $('priceUploaderSub').textContent = '다른 사진으로 바꾸려면 눌러주세요';
+    $('pricePhotoNote').innerHTML = '<div class="demo-note"><b>사진 인식은 데모예요.</b> 아래에서 비슷한 상품을 골라주세요.</div>'
+      + '<div class="chips" style="margin:8px 0 0;padding-left:0;">'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="nobuyoung"><span class="em">📚</span>노부영</button>'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="iphone15"><span class="em">📱</span>아이폰 15</button>'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="humidifier"><span class="em">💧</span>가습기</button>'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="saipen"><span class="em">🖍️</span>세이펜</button>'
+      + '</div>';
+  });
+
+  /* 사진 업로드 · 알바 */
+  $('albaUploader').addEventListener('click', function(){ $('albaPhoto').click(); });
+  $('albaPhoto').addEventListener('change', function(e){
+    var f = e.target.files && e.target.files[0];
+    if(!f){ return; }
+    var url = URL.createObjectURL(f);
+    var up = $('albaUploader');
+    up.classList.add('has-file');
+    up.style.borderStyle = 'solid';
+    $('albaUploaderIcon').innerHTML = '<img class="thumb" src="' + url + '" alt="공고 캡처">';
+    $('albaUploaderTitle').textContent = '캡처를 읽었어요';
+    $('albaUploaderSub').textContent = '내용을 확인하고 분석해 보세요';
+    $('albaText').value = JOBS.scam.text;
+    $('albaPhotoNote').innerHTML = '<div class="demo-note"><b>글자 인식은 데모예요.</b> 예시 공고로 채워뒀으니, 실제 공고는 직접 복사해 붙여넣어 주세요.</div>';
+  });
+
+  /* 초기화 */
+  loadRecords();
+  renderLedger();
+  loadAlerts();
+  renderAlerts();
+  setThr(alertThr);
+
+  if(memoryOnly){
+    var note = document.querySelector('#panel-ledger .foot-note');
+    if(note){ note.textContent = '이 화면에서는 저장이 제한될 수 있어요. 앱 데이터를 지우면 기록이 사라질 수 있으니 큰 금액은 메모해 두세요.'; }
+  }
+
+  window.addEventListener('storage', function(ev){
+    if(ev.key === STORE_KEY){ loadRecords(); renderLedger(); }
+    if(ev.key === ALERT_KEY){ loadAlerts(); renderAlerts(); }
+  });
+
+})();
+</script>
+<script>
+  /* 홈 화면 앱(PWA) 오프라인 지원 · file:// 에서는 건너뛴다 */
+  if('serviceWorker' in navigator && location.protocol === 'https:'){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){ /* 등록 실패해도 앱은 그대로 동작 */ });
+    });
+  }
+</script>
+</body>
+</html>
