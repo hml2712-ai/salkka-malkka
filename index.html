@@ -1097,7 +1097,7 @@
     if(!dot || !title || !body){ return; }
     if(input && document.activeElement !== input){ input.value = url; }
     dot.classList.toggle('on', !!url);
-    title.textContent = url ? '실시간 시세 서버 연결됨' : '실시간 시세 서버 연결하기';
+    title.textContent = url ? '실시간 시세 서버 주소 설정됨' : '실시간 시세 서버 연결하기';
     var open = keepOpen ? true : !url;
     body.classList.toggle('on', open);
     if(toggle){
