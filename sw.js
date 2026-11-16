@@ -1,6 +1,8 @@
 /* 살까말까 서비스 워커 — 홈 화면 앱이 인터넷이 없어도 열리게 해 줍니다.
-   캐시 이름의 버전을 올리면 예전 화면이 자동으로 정리됩니다. */
-var CACHE = 'salkka-malkka-v1';
+   캐시 이름의 버전을 올리면 예전 화면이 자동으로 정리됩니다.
+   (v2: 사진 글자 인식(OCR) 추가. Tesseract.js는 외부 CDN에서 받아오므로
+    아래 fetch 핸들러가 same-origin만 다루어 CDN 요청은 건드리지 않습니다.) */
+var CACHE = 'salkka-malkka-v2';
 var ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png'];
 
 self.addEventListener('install', function(e){

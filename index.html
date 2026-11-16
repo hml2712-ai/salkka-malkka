@@ -203,6 +203,41 @@
     padding:9px 11px;border-radius:10px;background:#F8F9FA;
   }
   .demo-note b{color:var(--ink-2);}
+  .demo-note + .demo-note{margin-top:6px;}
+  .demo-note.ok{background:#F1FAF6;color:#2C7A61;}
+  .demo-note.ok b{color:#0B8A66;}
+  .demo-note.warn{background:#FFF7F1;color:#8A5A2B;}
+  .demo-note.warn b{color:#B45309;}
+
+  /* ---------- 사진 글자 인식(OCR) 진행 ---------- */
+  .ocr-status{
+    margin-top:10px;padding:11px 12px;border-radius:12px;background:#F1F6F4;
+    animation:ocrIn .18s ease-out;
+  }
+  @keyframes ocrIn{from{opacity:0;transform:translateY(-2px);}to{opacity:1;transform:none;}}
+  .ocr-status .ocr-line{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+  .ocr-status b{font-size:11.8px;font-weight:800;color:var(--ink-2);letter-spacing:-.2px;line-height:1.45;}
+  .ocr-status .pct{flex:0 0 auto;font-size:11.8px;font-weight:800;color:#0B8A66;font-variant-numeric:tabular-nums;}
+  .ocr-bar{margin-top:8px;height:5px;border-radius:999px;background:#DEE7E3;overflow:hidden;}
+  .ocr-bar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#12B886,#4DD4AC);transition:width .25s ease;}
+  .ocr-bar.pulse{position:relative;}
+  .ocr-bar.pulse i{width:35% !important;animation:ocrPulse 1.1s ease-in-out infinite;}
+  @keyframes ocrPulse{0%{transform:translateX(-110%);}100%{transform:translateX(300%);}}
+  .chips.ocr-chips{margin:8px 0 0;padding-left:0;padding-right:0;gap:6px;}
+
+  /* ---------- 실제 매물 가격 계산 ---------- */
+  .price-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .price-chip{
+    padding:8px 11px;border-radius:999px;background:#fff;border:1.4px solid var(--line-2);
+    font-size:12.5px;font-weight:800;color:var(--ink-2);letter-spacing:-.2px;
+    font-variant-numeric:tabular-nums;transition:all .15s ease;
+  }
+  .price-chip.on{border-color:#12B886;background:#F1FAF6;color:#0B8A66;}
+  .price-chip.off{background:#F2F4F6;color:#B0B8C1;text-decoration:line-through;border-color:transparent;}
+  .price-chip:active{transform:scale(.96);}
+  .live-note{margin-top:10px;font-size:11.5px;color:var(--ink-3);line-height:1.45;}
+  .live-note b{color:var(--ink-2);}
+  .conf.sample{background:#FFF3E8;color:#B45309;}
 
   /* ---------- form ---------- */
   .field{margin-top:14px;}
@@ -657,11 +692,11 @@
     <section class="panel on" id="panel-price" role="tabpanel" aria-labelledby="tab-price">
       <div class="hero">
         <h2>이 매물,<br>얼마가 적당할까요?</h2>
-        <p>사진 한 장이나 상품명만 있으면 중고 시세를 바로 뽑아드려요. 책부터 전자기기·생활가전까지 다 돼요.</p>
+        <p>상품 사진이나 당근 검색 목록 캡처를 올리면 사진 속 가격을 읽어 실제 평균가·꿀매물 기준을 계산해요. 상품명만 넣어도 돼요.</p>
         <div class="badge-row">
-          <span class="pill orange">🛍️ 중고 매물 시세</span>
+          <span class="pill orange">🛍️ 실제 매물 가격으로 계산</span>
+          <span class="pill">🖼️ 목록 캡처 → 가격 뽑기</span>
           <span class="pill">📱 아이폰 15 · 💨 다이슨 에어랩</span>
-          <span class="pill">🌀 공기청정기</span>
         </div>
       </div>
 
@@ -669,8 +704,8 @@
         <button class="uploader" id="priceUploader" type="button">
           <span class="u-ico" id="priceUploaderIcon">📷</span>
           <span style="min-width:0">
-            <b id="priceUploaderTitle">사진으로 찾기</b>
-            <span id="priceUploaderSub">상품 사진을 올려주세요</span>
+            <b id="priceUploaderTitle">사진 · 목록 캡처 올리기</b>
+            <span id="priceUploaderSub">상품 사진이나 당근 검색 목록 캡처를 올려주세요</span>
           </span>
           <span class="u-add">＋</span>
         </button>
@@ -685,6 +720,10 @@
           </div>
         </div>
 
+        <div class="card-title" style="margin:14px 0 -2px;">
+          <h3 style="font-size:12.5px;color:var(--ink-2);">참고용 샘플 품목</h3>
+          <span class="mini">고정 예시값</span>
+        </div>
         <div class="chips" id="priceChips">
           <button class="chip" type="button" data-action="sample-price" data-key="nobuyoung"><span class="em">📚</span>노부영 사이트워드</button>
           <button class="chip" type="button" data-action="sample-price" data-key="iphone15"><span class="em">📱</span>아이폰 15 128GB</button>
@@ -698,9 +737,25 @@
         <button class="btn primary" type="button" data-action="query-price" id="priceSubmit" style="margin-top:14px;">시세 조회하기</button>
       </div>
 
+      <!-- 실제 매물 가격 계산 (당근에서 본 가격을 직접 넣거나 사진에서 뽑기) -->
+      <div class="card" id="priceLiveCard">
+        <div class="card-title">
+          <h3>실제 매물 가격으로 계산</h3>
+          <span class="mini" id="priceLiveCount">당근에서 본 가격</span>
+        </div>
+        <div class="field" style="margin-top:0;">
+          <label for="livePrices">매물 가격 (여러 개는 쉼표·공백으로)</label>
+          <div class="input-wrap">
+            <input class="input" id="livePrices" type="text" inputmode="numeric" placeholder="예) 15000 18000 22000 또는 1.5만 2.2만" autocomplete="off">
+          </div>
+        </div>
+        <button class="btn primary" type="button" data-action="live-calc" style="margin-top:10px;height:46px;font-size:14.5px;border-radius:13px;">이 가격으로 평균 계산</button>
+        <div id="priceLiveResult"></div>
+      </div>
+
       <div id="priceResult"></div>
 
-      <p class="foot-note">시제품 데모 화면이에요 · 가격은 실제 당근 매물을 참고한 예시값이에요. 결과 카드의 🥕 버튼을 누르면 동삭동 · 거래가능(판매중) 매물 위주로 당근 검색이 열려요.</p>
+      <p class="foot-note">사진 속 글자는 이 기기 안에서 인식해요(처음 한 번만 글자 데이터를 내려받아요 · 사진은 서버로 보내지 않아요) · ‘실제 매물 가격으로 계산’은 당근에서 본 가격을 그대로 계산한 값이고, 아래 시세 카드는 참고용 샘플 예시예요. 결과 카드의 🥕 버튼을 누르면 동삭동 · 거래가능(판매중) 매물 위주로 당근 검색이 열려요.</p>
     </section>
 
     <!-- ================= 꿀매물 탭 ================= -->
@@ -815,7 +870,7 @@
 
       <div id="albaResult"></div>
 
-      <p class="foot-note">시제품 데모 화면이에요 · 실제 공고는 💼 버튼으로 당근알바에서 확인하고, 근로계약서와 4대보험 가입 여부는 꼭 확인하세요.</p>
+      <p class="foot-note">공고 사진의 글자는 이 기기 안에서 읽어요(사진은 서버로 보내지 않아요) · 위험도는 규칙 기반 참고용 판독이라 최종 판단은 직접 해 주세요. 실제 공고는 💼 버튼으로 당근알바에서 확인하고, 근로계약서와 4대보험 가입 여부는 꼭 확인하세요.</p>
     </section>
 
     <!-- ================= 가계부 탭 ================= -->
@@ -1336,6 +1391,7 @@
 
     var html = '';
     html += '<div class="card result">';
+    html += '<div class="demo-note" style="margin:0 0 13px;"><b>참고용 샘플 예시예요.</b> 미리 넣어둔 예시값이라 실제 당근 매물 가격과 다를 수 있어요. 위 <b>‘실제 매물 가격으로 계산’</b>에 당근에서 본 가격을 넣으면 실물 기준으로 계산해 드려요.</div>';
     html += '<div class="res-head">';
     html += '<div class="res-emoji">' + d.emoji + '</div>';
     html += '<div style="min-width:0"><b>' + esc(d.name) + '</b><span class="sub">' + esc(d.category) + ' · 매물 ' + d.count + '건 참고</span></div>';
@@ -1404,7 +1460,7 @@
     return html;
   }
 
-  function runPriceQuery(name){
+  function runPriceQuery(name, opts){
     var q = String(name || '').trim();
     if(!q){
       toast('상품명을 입력하거나 사진을 올려주세요');
@@ -1415,7 +1471,7 @@
     currentPrice = d;
     var box = $('priceResult');
     box.innerHTML = skeletonPrice();
-    box.scrollIntoView({ behavior:'smooth', block:'start' });
+    if(!opts || opts.scroll !== false){ box.scrollIntoView({ behavior:'smooth', block:'start' }); }
     var btn = $('priceSubmit');
     btn.disabled = true;
     setTimeout(function(){
@@ -1793,10 +1849,28 @@
     return '?';
   }
 
+  /* 공고 제목: 상태바·UI 조각이 섞인 첫 줄 대신 한글이 있는 첫 줄을 쓴다 */
+  function jobTitleOf(text){
+    var lines = String(text || '').split('\n');
+    var pick = '';
+    var i, l;
+    for(i = 0; i < lines.length && i < 8; i++){
+      l = lines[i].replace(/[#\[\]【】]/g, '').trim();
+      if(!l){ continue; }
+      if((l.match(/[가-힣]/g) || []).length >= 2){ pick = l; break; }
+    }
+    if(!pick){
+      for(i = 0; i < lines.length; i++){
+        l = lines[i].replace(/[#\[\]【】]/g, '').trim();
+        if(l){ pick = l; break; }
+      }
+    }
+    if(pick.length > 28){ pick = pick.slice(0, 28) + '…'; }
+    return pick || '이 공고';
+  }
+
   function renderAlba(res, rawText){
-    var firstLine = String(rawText || '').split('\n')[0].replace(/[#\[\]【】]/g, '').trim();
-    if(firstLine.length > 28){ firstLine = firstLine.slice(0, 28) + '…'; }
-    var jobName = firstLine || '이 공고';
+    var jobName = jobTitleOf(rawText);
 
     var html = '';
     html += '<div class="card result">';
@@ -2081,6 +2155,503 @@
     toast('🔔 ‘' + (name.length > 12 ? name.slice(0, 12) + '…' : name) + '’ 알림을 등록했어요');
   }
 
+  /* ================= 사진 글자 인식(OCR) =================
+     Tesseract.js(한국어+영어)를 필요할 때만 CDN에서 불러와 사진 속 글자를 읽는다.
+     사진은 서버로 올리지 않고 이 기기 안에서만 처리한다. */
+  var OCR_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  var ocrLibPromise = null;
+  var ocrWorkerPromise = null;
+  var ocrProgressCb = null;
+  var ocrBusy = false;
+
+  var OCR_STEP = {
+    'loading tesseract core': '글자 읽기 도구를 불러오는 중이에요…',
+    'initializing tesseract': '글자 읽기 도구를 준비하는 중이에요…',
+    'loading language traineddata': '한국어·영어 글자 데이터를 준비하는 중이에요… (처음 한 번만 오래 걸려요)',
+    'initializing api': '글자를 읽을 준비를 하는 중이에요…',
+    'recognizing text': '사진 속 글자를 읽고 있어요…'
+  };
+
+  function ocrSupported(){
+    return !!(window.Worker && window.Blob && window.URL && document.createElement('canvas').getContext);
+  }
+
+  function loadOcrLib(){
+    if(window.Tesseract){ return Promise.resolve(window.Tesseract); }
+    if(ocrLibPromise){ return ocrLibPromise; }
+    ocrLibPromise = new Promise(function(resolve, reject){
+      var s = document.createElement('script');
+      var settled = false;
+      var timer = setTimeout(function(){
+        if(settled){ return; }
+        settled = true; ocrLibPromise = null; reject(new Error('ocr-timeout'));
+      }, 30000);
+      s.src = OCR_CDN;
+      s.async = true;
+      s.onload = function(){
+        if(settled){ return; }
+        settled = true; clearTimeout(timer);
+        if(window.Tesseract){ resolve(window.Tesseract); }
+        else { ocrLibPromise = null; reject(new Error('ocr-empty')); }
+      };
+      s.onerror = function(){
+        if(settled){ return; }
+        settled = true; clearTimeout(timer); ocrLibPromise = null;
+        if(s.parentNode){ s.parentNode.removeChild(s); }
+        reject(new Error('ocr-cdn'));
+      };
+      document.head.appendChild(s);
+    });
+    return ocrLibPromise;
+  }
+
+  function getOcrWorker(T){
+    if(ocrWorkerPromise){ return ocrWorkerPromise; }
+    ocrWorkerPromise = T.createWorker('kor+eng', 1, {
+      logger: function(m){ if(ocrProgressCb && m){ ocrProgressCb(m); } }
+    }).catch(function(err){
+      ocrWorkerPromise = null;
+      throw err;
+    });
+    return ocrWorkerPromise;
+  }
+
+  function dropOcrWorker(){
+    var p = ocrWorkerPromise;
+    ocrWorkerPromise = null;
+    if(p){ p.then(function(w){ try{ w.terminate(); }catch(e){} }).catch(function(){}); }
+  }
+
+  /* 사진을 글자 인식에 유리하게 다듬는다: 키우기·흑백·어두운 배경 반전 */
+  function ocrPrepCanvas(file){
+    return new Promise(function(resolve, reject){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        try{
+          var w = img.naturalWidth || img.width;
+          var h = img.naturalHeight || img.height;
+          if(!w || !h){ throw new Error('ocr-image-size'); }
+          var scale = 1;
+          if(w < 1400){ scale = Math.min(2.2, 1400 / w); }
+          else if(w > 2600){ scale = 2600 / w; }
+          if(w * scale * h * scale > 4200000){ scale = Math.sqrt(4200000 / (w * h)); }
+          var cw = Math.max(1, Math.round(w * scale));
+          var ch = Math.max(1, Math.round(h * scale));
+          var cv = document.createElement('canvas');
+          cv.width = cw; cv.height = ch;
+          var ctx = cv.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, cw, ch);
+          if(ctx.imageSmoothingQuality){ ctx.imageSmoothingQuality = 'high'; }
+          ctx.drawImage(img, 0, 0, cw, ch);
+          var data = ctx.getImageData(0, 0, cw, ch);
+          var px = data.data;
+          var sum = 0, i, g;
+          for(i = 0; i < px.length; i += 4){
+            g = px[i] * 0.299 + px[i+1] * 0.587 + px[i+2] * 0.114;
+            px[i] = px[i+1] = px[i+2] = g;
+            sum += g;
+          }
+          if(sum / (cw * ch) < 118){          /* 다크 모드 캡처는 흑백 반전 */
+            for(i = 0; i < px.length; i += 4){ px[i] = 255 - px[i]; px[i+1] = 255 - px[i+1]; px[i+2] = 255 - px[i+2]; }
+          }
+          ctx.putImageData(data, 0, 0);
+          URL.revokeObjectURL(url);
+          resolve(cv);
+        }catch(e){
+          URL.revokeObjectURL(url);
+          reject(e);
+        }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('ocr-image-load')); };
+      img.src = url;
+    });
+  }
+
+  function ocrCleanText(raw){
+    var s = String(raw || '').replace(/\r/g, '\n');
+    s = s.replace(/[ \t]+/g, ' ');
+    s = s.replace(/(\d)\s*,\s*(\d)/g, '$1,$2');
+    for(var n = 0; n < 4; n++){ s = s.replace(/(^|[^0-9])([0-9]) ([0-9])(?=[^0-9]|$)/g, '$1$2$3'); }
+    var lines = s.split('\n');
+    var out = [];
+    for(var i = 0; i < lines.length; i++){
+      var l = lines[i].replace(/^[|•·\s]+/, '').replace(/\s+$/, '').trim();
+      if(l){ out.push(l); }
+    }
+    /* 맨 위 휴대폰 상태바(시계·전파·배터리)는 캡처에 같이 찍혀 자주 섞여 들어온다 */
+    var dropped = 0;
+    while(out.length && dropped < 4 && /^\d{1,2}:\d{2}/.test(out[0])){ out.shift(); dropped++; }
+    while(out.length && dropped < 4 && out[0].length <= 12 && !/[가-힣]/.test(out[0]) && !/[A-Za-z]{4,}/.test(out[0])){
+      out.shift(); dropped++;
+    }
+    return out.join('\n').trim();
+  }
+
+  function ocrRead(file, onProgress){
+    if(!ocrSupported()){ return Promise.reject(new Error('ocr-unsupported')); }
+    ocrProgressCb = onProgress || null;
+    var T = null;
+    return loadOcrLib().then(function(t){
+      T = t;
+      return ocrPrepCanvas(file);
+    }).then(function(canvas){
+      return getOcrWorker(T).then(function(worker){ return worker.recognize(canvas); });
+    }).then(function(res){
+      var d = (res && res.data) || {};
+      ocrProgressCb = null;
+      return { text: ocrCleanText(d.text || ''), confidence: Math.round(Number(d.confidence) || 0) };
+    }).catch(function(err){
+      ocrProgressCb = null;
+      dropOcrWorker();
+      throw err;
+    });
+  }
+
+  function ocrProgressHtml(msg, pct){
+    var p = (typeof pct === 'number' && pct >= 0) ? Math.max(0, Math.min(100, Math.round(pct))) : -1;
+    return '<div class="ocr-status">'
+      + '<div class="ocr-line"><b>' + esc(msg) + '</b>'
+      + (p >= 0 ? '<span class="pct">' + p + '%</span>' : '')
+      + '</div>'
+      + '<div class="ocr-bar' + (p >= 0 ? '' : ' pulse') + '"><i style="width:' + (p >= 0 ? p : 35) + '%"></i></div>'
+      + '</div>';
+  }
+
+  function ocrShowProgress(boxId, m){
+    var box = $(boxId);
+    if(!box){ return; }
+    var status = (m && m.status) || '';
+    var recognizing = status === 'recognizing text';
+    var msg = OCR_STEP[status] || '사진 속 글자를 읽고 있어요…';
+    var pct = Math.round((m && typeof m.progress === 'number' ? m.progress : 0) * 100);
+    box.innerHTML = ocrProgressHtml(msg, recognizing ? pct : -1);
+  }
+
+  /* ======== 실제 매물 가격: 사진에서 뽑기 · 직접 입력 계산 ======== */
+  var livePrices = [];
+  var liveFree = 0;
+  var liveAssumedMan = false;
+
+  function priceMedianArr(arr){
+    if(!arr.length){ return 0; }
+    if(arr.length % 2){ return arr[(arr.length - 1) / 2]; }
+    return Math.round((arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2);
+  }
+
+  /* “15000 18000 22000”, “1.5만 2.2만”, “15,000원” 모두 받아들인다 */
+  function parsePriceTokens(str){
+    var s = String(str || '');
+    for(var i = 0; i < 3; i++){ s = s.replace(/(\d),(\d{3})(?!\d)/g, '$1$2'); }
+    var parts = s.split(/[,，;\/|\n\r\t ]+/);
+    var vals = [];
+    var assumed = false;
+    for(var p = 0; p < parts.length; p++){
+      var t = String(parts[p] || '').trim();
+      if(!t){ continue; }
+      var man = /만/.test(t);
+      var num = t.replace(/[^0-9.]/g, '');
+      if(!num || num === '.'){ continue; }
+      var v = parseFloat(num);
+      if(isNaN(v) || v <= 0){ continue; }
+      if(man){ v = v * 10000; }
+      else if(v < 1000 && t.indexOf('원') < 0){ v = v * 10000; assumed = true; }
+      v = Math.round(v);
+      if(v > 0 && v <= 100000000){ vals.push(v); }
+    }
+    return { vals: vals, assumedMan: assumed };
+  }
+
+  /* 사진 글자에서 “10,000원”, “25,000”, “12만원” 같은 가격을 모두 뽑는다 */
+  function extractPrices(text){
+    var t = String(text || '');
+    var re = /(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(만\s*원|만원|만|원)?/g;
+    var vals = [];
+    var m;
+    while((m = re.exec(t)) !== null){
+      var rawNum = m[1];
+      var unit = (m[2] || '').replace(/\s/g, '');
+      var hasComma = rawNum.indexOf(',') >= 0;
+      if(!unit && !hasComma){ continue; }
+      var v = parseFloat(rawNum.replace(/,/g, ''));
+      if(isNaN(v)){ continue; }
+      if(unit.indexOf('만') >= 0){ v = v * 10000; }
+      v = Math.round(v);
+      if(v >= 1000 && v <= 100000000){ vals.push(v); }
+    }
+    return vals;
+  }
+
+  function countFreePosts(text){
+    var m = String(text || '').match(/무료\s*나눔|나눔\s*함/g);
+    return m ? m.length : 0;
+  }
+
+  /* 이상한 값(0원·무료나눔·터무니없이 싼/반 값)은 꺼둔 상태로 넣어 둔다 */
+  function setLivePrices(vals){
+    var arr = vals.slice().sort(function(a, b){ return a - b; });
+    var med = priceMedianArr(arr);
+    livePrices = [];
+    for(var i = 0; i < arr.length; i++){
+      var v = arr[i];
+      var on = true;
+      if(v < 500 || v > 50000000){ on = false; }
+      else if(med > 0 && (v < med * 0.2 || v > med * 5)){ on = false; }
+      livePrices.push({ v: v, on: on });
+    }
+    var input = $('livePrices');
+    if(input){ input.value = arr.map(function(v){ return fmt(v); }).join(' '); }
+  }
+
+  function liveStats(){
+    var vals = [];
+    for(var i = 0; i < livePrices.length; i++){
+      if(livePrices[i].on && livePrices[i].v > 0){ vals.push(livePrices[i].v); }
+    }
+    if(!vals.length){ return null; }
+    vals.sort(function(a, b){ return a - b; });
+    var n = vals.length, sum = 0, k;
+    for(k = 0; k < n; k++){ sum += vals[k]; }
+    var avg = Math.round(sum / n);
+    var unit = avg >= 20000 ? 1000 : 100;
+    var buyLow = Math.round(avg * 0.85 / unit) * unit;
+    var buyHigh = Math.round(avg * 0.90 / unit) * unit;
+    if(buyHigh <= buyLow){ buyHigh = buyLow + unit; }
+    return {
+      n: n, avg: avg, med: priceMedianArr(vals), min: vals[0], max: vals[n - 1],
+      buyLow: buyLow, buyHigh: buyHigh
+    };
+  }
+
+  function renderLivePrices(){
+    var box = $('priceLiveResult');
+    if(!box){ return; }
+    var cnt = $('priceLiveCount');
+    if(!livePrices.length){
+      box.innerHTML = '<div class="live-note">당근에서 본 매물 가격을 넣으면 <b>실제 평균가·중앙값·꿀매물 기준</b>을 계산해 드려요. 사진을 올리면 사진 속 가격을 자동으로 뽑아요.</div>';
+      if(cnt){ cnt.textContent = '당근에서 본 가격'; }
+      return;
+    }
+
+    var html = '<div class="price-chips">';
+    var offCount = 0;
+    for(var i = 0; i < livePrices.length; i++){
+      var p = livePrices[i];
+      if(!p.on){ offCount++; }
+      html += '<button class="price-chip ' + (p.on ? 'on' : 'off') + '" type="button" data-action="live-toggle" data-i="' + i + '" aria-pressed="' + (p.on ? 'true' : 'false') + '" aria-label="' + fmt(p.v) + '원 ' + (p.on ? '계산에서 빼기' : '계산에 다시 넣기') + '">' + fmt(p.v) + '원</button>';
+    }
+    html += '</div>';
+
+    var st = liveStats();
+    if(!st){
+      html += '<div class="demo-note warn"><b>켜둔 가격이 없어요.</b> 위 가격을 하나 이상 눌러서 다시 켜주세요.</div>';
+      box.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="avg-wrap" style="margin-top:16px;">';
+    html += '<div class="avg-label">실제 매물 ' + st.n + '건 기준 평균가</div>';
+    html += '<div class="avg-price"><b>' + fmt(st.avg) + '</b><span class="won">원</span></div>';
+    html += '<div class="avg-caption">' + fmt(st.min) + '원 ~ ' + fmt(st.max) + '원 · 중앙값 ' + fmt(st.med) + '원</div>';
+    html += '</div>';
+
+    html += '<div class="grid2">';
+    html += '<div class="mini-card sell"><div class="k">🍯 꿀매물 기준 (최저가)</div><div class="v">' + fmt(st.min) + '원</div></div>';
+    html += '<div class="mini-card buy"><div class="k">적정 구매가 (평균 −10~15%)</div><div class="v">' + fmt(st.buyLow) + '~' + fmt(st.buyHigh) + '원</div></div>';
+    html += '</div>';
+
+    var cheapPct = st.avg > 0 ? Math.round((1 - st.min / st.avg) * 100) : 0;
+    html += '<div class="live-note"><b>' + fmt(st.min) + '원 이하</b>로 올라오면 평균보다 ' + cheapPct + '% 싼 매물이에요.</div>';
+    if(offCount > 0){ html += '<div class="live-note">꺼둔 가격 ' + offCount + '개는 계산에서 뺐어요. 눌러서 다시 넣을 수 있어요.</div>'; }
+    if(liveFree > 0){ html += '<div class="live-note">무료나눔 글 ' + liveFree + '건은 평균에서 뺐어요.</div>'; }
+    if(liveAssumedMan){ html += '<div class="live-note">‘15 18 22’처럼 작은 숫자는 <b>만원 단위</b>로 계산했어요. 원 단위는 15000처럼 적어주세요.</div>'; }
+
+    box.innerHTML = html;
+    if(cnt){ cnt.textContent = st.n + '건 기준'; }
+  }
+
+  function ocrJosa(word){
+    var s = String(word || '').trim();
+    var code = s.charAt(s.length - 1).charCodeAt(0);
+    if(code >= 0xAC00 && code <= 0xD7A3){ return ((code - 0xAC00) % 28) ? '을' : '를'; }
+    return '을(를)';
+  }
+
+  function ocrErrorText(err){
+    var code = String((err && (err.message || err.name)) || '') + ' ' + String((err && err.stack) || '');
+    if(/unsupported/.test(code)){ return '이 브라우저에서는 사진 글자 읽기를 쓸 수 없어요.'; }
+    if(/timeout|cdn|empty|failed to fetch|networkerror|importscripts|load/i.test(code)){
+      return '글자 읽기 도구를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.';
+    }
+    if(/image/.test(code)){ return '사진을 열지 못했어요. 다른 사진으로 다시 시도해 주세요.'; }
+    return '사진 속 글자를 읽지 못했어요.';
+  }
+
+  function samplePriceChipsHtml(){
+    return '<div class="chips ocr-chips">'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="nobuyoung"><span class="em">📚</span>노부영</button>'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="iphone15"><span class="em">📱</span>아이폰 15</button>'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="humidifier"><span class="em">💧</span>가습기</button>'
+      + '<button class="chip" type="button" data-action="sample-price" data-key="saipen"><span class="em">🖍️</span>세이펜</button>'
+      + '</div>';
+  }
+
+  function sampleAlbaChipsHtml(){
+    return '<div class="chips ocr-chips">'
+      + '<button class="chip mint" type="button" data-action="sample-alba" data-key="scam"><span class="em">⚠️</span>재택 검색대행</button>'
+      + '<button class="chip mint" type="button" data-action="sample-alba" data-key="gs25"><span class="em">🏪</span>동삭동 편의점</button>'
+      + '<button class="chip mint" type="button" data-action="sample-alba" data-key="logistics"><span class="em">📦</span>물류센터 단기</button>'
+      + '<button class="chip mint" type="button" data-action="sample-alba" data-key="account"><span class="em">🪪</span>계정 대여 재택</button>'
+      + '</div>';
+  }
+
+  /* 알바 공고 사진 → 글자 읽기 → 공고 칸 채우고 바로 분석 */
+  function albaReadPhoto(file){
+    if(ocrBusy){ toast('사진을 읽고 있어요. 조금만 기다려 주세요'); return; }
+    ocrBusy = true;
+    $('albaUploaderTitle').textContent = '사진 속 글자를 읽는 중이에요';
+    $('albaUploaderSub').textContent = '잠시만 기다려 주세요';
+    $('albaPhotoNote').innerHTML = ocrProgressHtml(OCR_STEP['loading tesseract core'], -1);
+    ocrRead(file, function(m){ ocrShowProgress('albaPhotoNote', m); }).then(function(out){
+      ocrBusy = false;
+      var letters = out.text.replace(/[^가-힣0-9A-Za-z]/g, '');
+      if(letters.length < 8){ albaOcrFallback('사진에서 글자를 거의 찾지 못했어요.'); return; }
+      $('albaText').value = out.text;
+      $('albaUploaderTitle').textContent = '공고 글자를 읽었어요';
+      $('albaUploaderSub').textContent = '인식된 내용을 확인하고 분석해 보세요';
+      var lines = out.text.split('\n').length;
+      var conf = out.confidence;
+      var html = '<div class="demo-note ok"><b>사진에서 ' + lines + '줄을 읽어 공고 칸에 채웠어요'
+        + (conf > 0 ? ' (인식 정확도 ' + conf + '%)' : '') + '.</b>'
+        + ' 인식된 내용이에요 — 틀린 글자가 있으면 수정 후 다시 분석할 수 있어요.</div>';
+      if(conf && conf < 70){
+        html += '<div class="demo-note warn"><b>글자가 일부 깨졌을 수 있어요.</b> 시급·근무시간 같은 숫자는 원본 사진과 한 번 더 대조해 주세요.</div>';
+      }
+      $('albaPhotoNote').innerHTML = html;
+      runAnalyze();
+    }).catch(function(err){
+      ocrBusy = false;
+      albaOcrFallback(ocrErrorText(err));
+    });
+  }
+
+  function albaOcrFallback(reason){
+    $('albaUploaderTitle').textContent = '공고 캡처 올리기';
+    $('albaUploaderSub').textContent = '캡처 사진에서 공고를 읽어와요';
+    $('albaPhotoNote').innerHTML = '<div class="demo-note warn"><b>' + esc(reason) + '</b> 사진 대신 공고 글을 아래 칸에 붙여넣어 주세요. 예시 공고로 먼저 해볼 수도 있어요.</div>'
+      + sampleAlbaChipsHtml();
+  }
+
+  /* 시세 탭 사진 → 글자 읽기 → 상품명 채우고 후보 제안 */
+  var OCR_UI_NOISE = /^(관심|조회|채팅|찜|판매|나눔|상태|가격|올리기|더보기|신고|공유|프로필|동네|인기|추천|검색|당근|중고|거래|광고|이벤트|알림|메뉴|홈|마이|로그인|삭제|수정|확인|취소|저장|사진|이미지|상품|매물|판매중|거래완료|끌올|하트|최근|검색결과|전화문의|지원하기|채팅하기|바로가기|목록|뒤로|닫기)(\s*[0-9,]+)?$/;
+
+  function ocrKeywordScore(line){
+    var s = 0;
+    var keys = Object.keys(PRICES);
+    for(var i = 0; i < keys.length; i++){
+      var name = PRICES[keys[i]].name;
+      if(line.indexOf(name) >= 0){ s += 6; }
+      var toks = name.replace(/[0-9A-Za-z]/g, ' ').split(/\s+/);
+      for(var t = 0; t < toks.length; t++){
+        if(toks[t].length > 1 && line.indexOf(toks[t]) >= 0){ s += 4; }
+      }
+    }
+    if(/(리더스|에어랩|가습기|청정기|세이펜|트립트랩|아이폰|갤럭시|유모차|카시트|책장|책상|소파|자전거|노트북|아이패드|에어팟|워치|드라이기|고데기|믹서기|밥솥|정수기|선풍기|히터|로봇청소기|전집|동화책|장난감|블록|레고)/.test(line)){ s += 5; }
+    return s;
+  }
+
+  function ocrProductNames(text){
+    var lines = String(text || '').split('\n');
+    var pool = [];
+    var seen = {};
+    for(var i = 0; i < lines.length; i++){
+      var raw = lines[i].replace(/\s+/g, ' ').trim();
+      if(raw.length < 2 || raw.length > 40){ continue; }
+      var hangul = (raw.match(/[가-힣]/g) || []).length;
+      var alpha = (raw.match(/[A-Za-z]/g) || []).length;
+      var digits = (raw.match(/[0-9]/g) || []).length;
+      if(hangul + alpha < 2){ continue; }
+      if(OCR_UI_NOISE.test(raw)){ continue; }
+      if(/^[0-9,.\s원:%~\-()]+$/.test(raw)){ continue; }
+      if(seen[raw]){ continue; }
+      var score = Math.min(hangul + alpha, 16);
+      if(digits > 0 && digits <= 8){ score += 2; }
+      score += Math.max(0, 6 - Math.floor(i / 3));
+      if(raw.length > 30){ score -= 8; }
+      if(/[~!@#$%^&*+=|<>]/.test(raw)){ score -= 4; }
+      score += ocrKeywordScore(raw);
+      if(score < 5){ continue; }
+      seen[raw] = 1;
+      pool.push({ text: raw, score: score });
+    }
+    pool.sort(function(a, b){ return b.score - a.score; });
+    var res = [];
+    for(var k = 0; k < pool.length && k < 6; k++){ res.push(pool[k].text); }
+    return res;
+  }
+
+  function priceReadPhoto(file){
+    if(ocrBusy){ toast('사진을 읽고 있어요. 조금만 기다려 주세요'); return; }
+    ocrBusy = true;
+    $('priceUploaderSub').textContent = '사진 속 글자를 읽는 중이에요';
+    $('pricePhotoNote').innerHTML = ocrProgressHtml(OCR_STEP['loading tesseract core'], -1);
+    ocrRead(file, function(m){ ocrShowProgress('pricePhotoNote', m); }).then(function(out){
+      ocrBusy = false;
+      var cands = ocrProductNames(out.text);
+      var prices = extractPrices(out.text);
+      var best = cands.length ? cands[0] : '';
+
+      if(!cands.length && !prices.length){
+        priceOcrFallback('사진에서 상품명·가격을 찾지 못했어요.');
+        return;
+      }
+
+      var notes = [];
+      if(prices.length){
+        liveFree = countFreePosts(out.text);
+        liveAssumedMan = false;
+        setLivePrices(prices);
+        renderLivePrices();
+        notes.push('<b>가격 ' + prices.length + '개를 읽어 평균을 계산했어요.</b> 가격을 눌러 빼거나 직접 고칠 수 있어요.');
+      }
+      if(best){
+        $('priceInput').value = best;
+        $('priceClear').classList.add('on');
+        notes.push('상품명은 ‘<b>' + esc(best) + '</b>’라고 읽었어요.');
+      }
+
+      $('priceUploaderTitle').textContent = prices.length ? '사진에서 가격을 읽었어요' : '사진에서 상품명을 읽었어요';
+      $('priceUploaderSub').textContent = '가격을 눌러 빼거나 직접 고칠 수 있어요';
+
+      var html = '<div class="demo-note ok">' + notes.join(' ') + '</div>';
+      if(cands.length > 1){
+        html += '<div class="chips ocr-chips">';
+        for(var i = 0; i < cands.length && i < 4; i++){
+          html += '<button class="chip' + (i === 0 ? ' on' : '') + '" type="button" data-action="ocr-price" data-q="' + esc(cands[i]) + '">'
+            + '<span class="em">🔍</span>' + esc(cands[i].length > 16 ? cands[i].slice(0, 16) + '…' : cands[i]) + '</button>';
+        }
+        html += '</div>';
+      }
+      $('pricePhotoNote').innerHTML = html;
+
+      if(prices.length){
+        var live = $('priceLiveCard');
+        if(live){ live.scrollIntoView({ behavior:'smooth', block:'start' }); }
+      }
+      if(best){ runPriceQuery(best, { scroll: !prices.length }); }
+    }).catch(function(err){
+      ocrBusy = false;
+      priceOcrFallback(ocrErrorText(err));
+    });
+  }
+
+  function priceOcrFallback(reason){
+    $('priceUploaderSub').textContent = '상품 사진을 올려주세요';
+    $('pricePhotoNote').innerHTML = '<div class="demo-note warn"><b>' + esc(reason) + '</b> 상품명을 직접 입력하거나 아래에서 비슷한 상품을 골라주세요.</div>'
+      + samplePriceChipsHtml();
+  }
+
   /* ================= 이벤트 ================= */
   document.addEventListener('click', function(e){
     var t = e.target;
@@ -2103,6 +2674,44 @@
       $('priceInput').value = d.name;
       $('priceClear').classList.add('on');
       runPriceQuery(d.name);
+      return;
+    }
+
+    if(action === 'ocr-price'){
+      var oq = el.getAttribute('data-q') || '';
+      if(!oq){ return; }
+      $('priceInput').value = oq;
+      $('priceClear').classList.toggle('on', oq.length > 0);
+      var oc = document.querySelectorAll('#pricePhotoNote .chip');
+      for(var oi = 0; oi < oc.length; oi++){ oc[oi].classList.remove('on'); }
+      el.classList.add('on');
+      runPriceQuery(oq);
+      return;
+    }
+
+    if(action === 'live-calc'){
+      var lp = $('livePrices');
+      var parsed = parsePriceTokens(lp ? lp.value : '');
+      if(!parsed.vals.length){
+        toast('가격을 숫자로 넣어 주세요');
+        if(lp){ lp.focus(); }
+        return;
+      }
+      liveFree = 0;
+      liveAssumedMan = parsed.assumedMan;
+      setLivePrices(parsed.vals);
+      renderLivePrices();
+      toast('실제 매물 ' + parsed.vals.length + '건으로 계산했어요');
+      var lr = $('priceLiveResult');
+      if(lr){ lr.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      return;
+    }
+
+    if(action === 'live-toggle'){
+      var li = parseInt(el.getAttribute('data-i'), 10);
+      if(isNaN(li) || !livePrices[li]){ return; }
+      livePrices[li].on = !livePrices[li].on;
+      renderLivePrices();
       return;
     }
 
@@ -2228,7 +2837,7 @@
     if(action === 'skip-job'){
       if(!currentJob){ return; }
       var r = currentJob.res;
-      var first = String(currentJob.text).split('\n')[0].replace(/[#\[\]【】]/g, '').trim();
+      var first = jobTitleOf(currentJob.text);
       if(first.length > 24){ first = first.slice(0, 24) + '…'; }
       var flags = r.checks.filter(function(c){ return c.status === 'danger'; }).map(function(c){ return c.label; });
       if(!flags.length){
@@ -2313,19 +2922,14 @@
   $('pricePhoto').addEventListener('change', function(e){
     var f = e.target.files && e.target.files[0];
     if(!f){ return; }
+    e.target.value = '';                       /* 같은 사진을 다시 골라도 읽도록 초기화 */
     var url = URL.createObjectURL(f);
     var up = $('priceUploader');
     up.classList.add('has-file');
     $('priceUploaderIcon').innerHTML = '<img class="thumb" src="' + url + '" alt="상품 사진">';
     $('priceUploaderTitle').textContent = '사진이 올라갔어요';
-    $('priceUploaderSub').textContent = '다른 사진으로 바꾸려면 눌러주세요';
-    $('pricePhotoNote').innerHTML = '<div class="demo-note"><b>사진 인식은 데모예요.</b> 아래에서 비슷한 상품을 골라주세요.</div>'
-      + '<div class="chips" style="margin:8px 0 0;padding-left:0;">'
-      + '<button class="chip" type="button" data-action="sample-price" data-key="nobuyoung"><span class="em">📚</span>노부영</button>'
-      + '<button class="chip" type="button" data-action="sample-price" data-key="iphone15"><span class="em">📱</span>아이폰 15</button>'
-      + '<button class="chip" type="button" data-action="sample-price" data-key="humidifier"><span class="em">💧</span>가습기</button>'
-      + '<button class="chip" type="button" data-action="sample-price" data-key="saipen"><span class="em">🖍️</span>세이펜</button>'
-      + '</div>';
+    $('priceUploaderSub').textContent = '사진 속 글자를 읽는 중이에요';
+    priceReadPhoto(f);
   });
 
   /* 사진 업로드 · 알바 */
@@ -2333,15 +2937,15 @@
   $('albaPhoto').addEventListener('change', function(e){
     var f = e.target.files && e.target.files[0];
     if(!f){ return; }
+    e.target.value = '';
     var url = URL.createObjectURL(f);
     var up = $('albaUploader');
     up.classList.add('has-file');
     up.style.borderStyle = 'solid';
     $('albaUploaderIcon').innerHTML = '<img class="thumb" src="' + url + '" alt="공고 캡처">';
-    $('albaUploaderTitle').textContent = '캡처를 읽었어요';
-    $('albaUploaderSub').textContent = '내용을 확인하고 분석해 보세요';
-    $('albaText').value = JOBS.scam.text;
-    $('albaPhotoNote').innerHTML = '<div class="demo-note"><b>글자 인식은 데모예요.</b> 예시 공고로 채워뒀으니, 실제 공고는 직접 복사해 붙여넣어 주세요.</div>';
+    $('albaUploaderTitle').textContent = '사진이 올라갔어요';
+    $('albaUploaderSub').textContent = '사진 속 글자를 읽는 중이에요';
+    albaReadPhoto(f);
   });
 
   /* 초기화 */
@@ -2350,6 +2954,7 @@
   loadAlerts();
   renderAlerts();
   setThr(alertThr);
+  renderLivePrices();
 
   if(memoryOnly){
     var note = document.querySelector('#panel-ledger .foot-note');
