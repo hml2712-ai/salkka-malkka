@@ -694,6 +694,42 @@
   }
   @keyframes sp{to{transform:rotate(360deg);}}
 
+  /* ---------- 검색어 보정 안내 (v5) ---------- */
+  .fix-badge{
+    background:linear-gradient(135deg,#FFFAF4 0%,#FFF2E8 100%);
+    border:1px solid #FFE1C7;
+    border-radius:16px;
+    padding:13px 14px;
+    margin:0 0 14px;
+  }
+  .fix-badge .fb-top{display:flex;gap:9px;align-items:flex-start;}
+  .fix-badge .fb-ico{
+    width:27px;height:27px;flex:0 0 27px;border-radius:9px;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+    box-shadow:0 1px 4px rgba(255,111,15,.14);
+  }
+  .fix-badge .fb-body{min-width:0;display:block;}
+  .fix-badge .fb-body b{display:block;font-size:13.5px;font-weight:800;letter-spacing:-.4px;line-height:1.45;color:var(--ink);}
+  .fix-badge .fb-body span{display:block;margin-top:3px;font-size:11.8px;color:#8C6446;line-height:1.45;letter-spacing:-.2px;word-break:keep-all;}
+  .fix-badge .fb-row{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
+  .fix-badge .fb-btn{
+    height:31px;padding:0 11px;border-radius:9px;background:#fff;
+    border:1px solid #FFD9B8;color:#B45309;font-size:12px;font-weight:700;letter-spacing:-.2px;
+  }
+  .fix-badge .fb-btn:active{background:#FFF6EE;}
+  .fix-badge .fb-note{margin-top:9px;font-size:11px;color:#A9846A;letter-spacing:-.2px;line-height:1.45;}
+  .fix-sug{margin-top:11px;}
+  .fix-sug-label{display:block;font-size:11px;font-weight:700;color:#9A7A62;letter-spacing:-.2px;margin-bottom:6px;}
+  .fix-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .fix-chip{
+    height:30px;padding:0 11px;border-radius:999px;background:#fff;
+    border:1px solid #FFE1C7;color:var(--ink-2);font-size:11.8px;font-weight:600;letter-spacing:-.2px;
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .fix-chip:active{background:#FFF6EE;color:#B45309;}
+  .fix-badge.solo{margin:0 0 12px;}
+  .fix-solo{margin:0 0 12px;padding:11px 12px;border-radius:14px;background:#FFF9F3;border:1px solid #FFE7D2;}
+
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.001s !important;transition-duration:.001s !important;}
   }
@@ -797,7 +833,7 @@
 
       <div id="priceResult"></div>
 
-      <p class="foot-note">사진 속 글자는 이 기기 안에서 인식해요(처음 한 번만 글자 데이터를 내려받아요 · 사진은 서버로 보내지 않아요) · 실시간 시세는 전국 당근 매물 기준이라 우리 동네 가격과 조금 다를 수 있어요. ‘실제 매물 가격으로 계산’은 당근에서 본 가격을 그대로 계산한 값이고, 결과 카드의 🥕 버튼을 누르면 동삭동 · 거래가능(판매중) 매물 위주로 당근 검색이 열려요.</p>
+      <p class="foot-note">사진 속 글자는 이 기기 안에서 인식해요(처음 한 번만 글자 데이터를 내려받아요 · 사진은 서버로 보내지 않아요) · 검색어 오타·띄어쓰기는 자동으로 보정해서 다시 찾아요(예: ‘아이페드’ → ‘아이패드’) · 실시간 시세는 전국 당근 매물 기준이라 우리 동네 가격과 조금 다를 수 있어요. ‘실제 매물 가격으로 계산’은 당근에서 본 가격을 그대로 계산한 값이고, 결과 카드의 🥕 버튼을 누르면 동삭동 · 거래가능(판매중) 매물 위주로 당근 검색이 열려요.</p>
     </section>
 
     <!-- ================= 꿀매물 탭 ================= -->
@@ -1509,6 +1545,520 @@
     if(name === 'honey'){ renderAlerts(); }
   }
 
+  /* ================= 검색어 오타·띄어쓰기 보정 (v5) =================
+     '아이페드', '에어팟프로', 'iphone15'처럼 적어도 인기 중고 품목 사전과
+     한글 자모 유사도(레벤슈타인 거리)로 가장 가까운 검색어를 찾아
+     자동으로 다시 찾아 줍니다. 서버(Worker)는 그대로 쓰고 앱 화면 안에서만 동작해요. */
+
+  var FIX_GROUPS = {
+    phone:     ['아이폰 15', '아이폰 14', '아이폰 13', '갤럭시 S24'],
+    tablet:    ['아이패드 프로', '아이패드 에어', '애플펜슬', '아이패드 9세대'],
+    earbuds:   ['에어팟 프로', '에어팟 3세대', '갤럭시 버즈'],
+    watch:     ['애플워치', '애플워치 SE', '갤럭시 워치'],
+    laptop:    ['맥북 에어', '맥북 프로', '아이맥', '모니터'],
+    game:      ['닌텐도 스위치', '플레이스테이션 5', '닌텐도 스위치 게임'],
+    beauty:    ['다이슨 에어랩', '다이슨 슈퍼소닉', '고데기'],
+    appliance: ['공기청정기', '아기 가습기', '로봇청소기', '에어프라이어'],
+    stroller:  ['부가부', '스토케 트립트랩', '유모차', '카시트'],
+    baby:      ['아기띠', '젖병', '바운서', '범보의자'],
+    book:      ['노부영 사이트워드', '전집', '세이펜', '동화책'],
+    fashion:   ['패딩', '코트', '가방', '운동화'],
+    hobby:     ['레고', '캠핑', '자전거', '피아노']
+  };
+
+  /* 인기 중고 품목·유아용품·가전·디지털·패션 키워드 사전
+     k: 바른 표기 · g: 추천 그룹 · a: 흔한 오타/영문 표기 */
+  var FIX_WORDS = [
+    { k:'아이폰', g:'phone', a:['iphone','i phone','아이퐁','아이펀','아이픈'] },
+    { k:'아이패드', g:'tablet', a:['ipad','아이페드','아이팻','아이패트','아이팻드','아이패두'] },
+    { k:'아이패드 프로', g:'tablet', a:['ipad pro','아이패드프로'] },
+    { k:'아이패드 에어', g:'tablet', a:['ipad air','아이패드에어'] },
+    { k:'에어팟', g:'earbuds', a:['airpods','airpod','air pods','어에팟','에어팟트','에얼팟','에어폿','에어파트'] },
+    { k:'에어팟 프로', g:'earbuds', a:['airpods pro','에어팟프로'] },
+    { k:'애플워치', g:'watch', a:['apple watch','applewatch','애플와치','애플워취'] },
+    { k:'맥북', g:'laptop', a:['macbook','mac book','맥복'] },
+    { k:'맥북 에어', g:'laptop', a:['macbook air','맥북에어'] },
+    { k:'맥북 프로', g:'laptop', a:['macbook pro','맥북프로'] },
+    { k:'아이맥', g:'laptop', a:['imac','아이멕'] },
+    { k:'애플펜슬', g:'tablet', a:['apple pencil','애플펜실'] },
+    { k:'에어태그', g:'tablet', a:['airtag','에어태크'] },
+    { k:'갤럭시', g:'phone', a:['galaxy','갤럭'] },
+    { k:'갤럭시 버즈', g:'earbuds', a:['galaxy buds','갤럭시버즈'] },
+    { k:'닌텐도', g:'game', a:['nintendo','닌탠도','닌텐됴','닌텐도우'] },
+    { k:'닌텐도 스위치', g:'game', a:['nintendo switch','닌텐도스위치','닌텐도 스윗치'] },
+    { k:'플레이스테이션', g:'game', a:['playstation','플스','플레이스테이숀'] },
+    { k:'플레이스테이션 5', g:'game', a:['playstation 5','플스5','플레이스테이션5'] },
+    { k:'모니터', g:'laptop', a:['monitor'] },
+    { k:'다이슨', g:'beauty', a:['dyson'] },
+    { k:'에어랩', g:'beauty', a:['airwrap','에어렙'] },
+    { k:'다이슨 에어랩', g:'beauty', a:['dyson airwrap','다이슨에어랩','다이슨에어렙'] },
+    { k:'다이슨 슈퍼소닉', g:'beauty', a:['dyson supersonic','슈퍼소닉','다이슨슈퍼소닉'] },
+    { k:'다이슨 청소기', g:'appliance', a:['dyson vacuum','다이슨청소기'] },
+    { k:'가습기', g:'appliance', a:['가스습기','가습긔'] },
+    { k:'아기 가습기', g:'appliance', a:['아기가습기'] },
+    { k:'공기청정기', g:'appliance', a:['공청기','공기청정','공기청정긔'] },
+    { k:'로봇청소기', g:'appliance', a:['로봇청소긔','로봇 청소기'] },
+    { k:'에어프라이어', g:'appliance', a:['air fryer','에어프라이','에어후라이'] },
+    { k:'커피머신', g:'appliance', a:['커피메신','커피머쉰'] },
+    { k:'전기밥솥', g:'appliance', a:['전기밥솟'] },
+    { k:'스토케', g:'stroller', a:['stokke','스토께'] },
+    { k:'트립트랩', g:'stroller', a:['tripp trapp','tripptrapp','트립트렙','트립트랍'] },
+    { k:'스토케 트립트랩', g:'stroller', a:['stokke tripp trapp','스토케트립트랩'] },
+    { k:'부가부', g:'stroller', a:['bugaboo','부가보','부가브'] },
+    { k:'유모차', g:'stroller', a:['유모챠'] },
+    { k:'카시트', g:'stroller', a:['카싯'] },
+    { k:'아기띠', g:'baby', a:['아기띄'] },
+    { k:'젖병', g:'baby', a:['젓병','젖명'] },
+    { k:'바운서', g:'baby', a:['바운져'] },
+    { k:'범보의자', g:'baby', a:['범보체어'] },
+    { k:'아기욕조', g:'baby', a:['아기욕죠'] },
+    { k:'세이펜', g:'book', a:['saipen','세이팬'] },
+    { k:'노부영', g:'book', a:['nobuyoung','노부엉'] },
+    { k:'노부영 사이트워드', g:'book', a:['노부영사이트워드'] },
+    { k:'패딩', g:'fashion', a:['페딩'] },
+    { k:'코트', g:'fashion', a:[] },
+    { k:'가방', g:'fashion', a:['가벙'] },
+    { k:'운동화', g:'fashion', a:[] },
+    { k:'등산화', g:'fashion', a:[] },
+    { k:'니트', g:'fashion', a:[] },
+    { k:'레고', g:'hobby', a:['lego'] },
+    { k:'캠핑', g:'hobby', a:['캥핑'] },
+    { k:'텐트', g:'hobby', a:['텐드'] },
+    { k:'자전거', g:'hobby', a:['자젼거'] },
+    { k:'피아노', g:'hobby', a:['피아너'] },
+    { k:'골프', g:'hobby', a:[] },
+    /* 영문 수식어 → 한글 (그룹 없음 = 복합어 나누기에만 사용) */
+    { k:'프로', kind:'english', fz:false, a:['pro'] },
+    { k:'에어', kind:'english', fz:false, a:['air'] },
+    { k:'미니', kind:'english', fz:false, a:['mini'] },
+    { k:'맥스', kind:'english', fz:false, a:['max'] },
+    { k:'플러스', kind:'english', fz:false, a:['plus'] },
+    { k:'울트라', kind:'english', fz:false, a:['ultra'] }
+  ];
+
+  var FIX_POPULAR = ['아이폰 15', '공기청정기', '유모차', '레고', '패딩'];
+  var FIX_LATIN_MODS = { pro:1, air:1, mini:1, max:1, plus:1, ultra:1, pods:1, pod:1, fit:1, se:1, gen:1 };
+  var FIX_HANGUL_MODS = { '프로':1, '에어':1, '미니':1, '맥스':1, '플러스':1, '울트라':1, '세대':1, '베이비':1, '베이비세트':1, '트레이':1, '컴플리트':1, '오리진':1, '케이스':1, '풀박':1, '정품':1, '리퍼':1 };
+
+  function fxKey(s){
+    return String(s || '').toLowerCase().replace(/[\s\-_·.,'"“”‘’()\[\]!?~]/g, '');
+  }
+  function fxText(s){
+    return String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  /* 한글 음절을 초성·중성·종성 자모로 풀어서 비교합니다. */
+  function fxJamo(s){
+    var out = [];
+    for(var i=0;i<s.length;i++){
+      var c = s.charCodeAt(i);
+      if(c >= 0xAC00 && c <= 0xD7A3){
+        var n = c - 0xAC00;
+        out.push(1 + Math.floor(n / 588), 1 + Math.floor((n % 588) / 28), 1 + (n % 28));
+      }else{
+        out.push(s.charAt(i));
+      }
+    }
+    return out;
+  }
+  function fxLev(a, b){
+    var m = a.length, n = b.length, i, j;
+    if(!m){ return n; }
+    if(!n){ return m; }
+    var prev = [], cur = [], t;
+    for(j=0;j<=n;j++){ prev[j] = j; }
+    for(i=1;i<=m;i++){
+      cur[0] = i;
+      for(j=1;j<=n;j++){
+        t = (a[i-1] === b[j-1]) ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + t);
+      }
+      for(j=0;j<=n;j++){ prev[j] = cur[j]; }
+    }
+    return prev[n];
+  }
+
+  var FIX_ALIAS = {};
+  var FIX_FUZZY = [];
+  var FIX_KO_PHRASES = [];
+  var FIX_HSPLIT = [];
+  var FIX_LSPLIT = [];
+
+  function fxRegexOf(alias){
+    var chars = [];
+    for(var i=0;i<alias.length;i++){
+      var ch = alias.charAt(i);
+      if(/\s/.test(ch)){ continue; }
+      chars.push(ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    }
+    return new RegExp(chars.join('\\s*'), 'gi');
+  }
+
+  (function buildFixDict(){
+    for(var i=0;i<FIX_WORDS.length;i++){
+      var w = FIX_WORDS[i];
+      var kn = fxKey(w.k);
+      if(!kn){ continue; }
+      if(!FIX_ALIAS[kn]){ FIX_ALIAS[kn] = { k:w.k, g:w.g || '', kind:(w.kind || 'none') }; }
+      var hangulCount = (w.k.match(/[가-힣]/g) || []).length;
+      if(w.fz !== false && hangulCount >= 2 && w.g){
+        FIX_FUZZY.push({ k:w.k, n:kn, g:w.g || '', len:hangulCount });
+      }
+      if(/^[가-힣]+$/.test(w.k) && w.g){ FIX_HSPLIT.push({ k:w.k, n:kn }); }
+      var list = w.a || [];
+      for(var j=0;j<list.length;j++){
+        var al = list[j];
+        var an = fxKey(al);
+        if(!an || an.length < 2){ continue; }
+        var kind = (/[가-힣]/.test(w.k) && !/[가-힣]/.test(al)) ? 'english' : 'typo';
+        if(!FIX_ALIAS[an]){ FIX_ALIAS[an] = { k:w.k, g:w.g || '', kind:kind }; }
+        if(/[가-힣]/.test(al)){
+          FIX_KO_PHRASES.push({ k:w.k, n:an, re:fxRegexOf(al) });
+        }else if(w.g){
+          FIX_LSPLIT.push({ k:w.k, n:an });
+        }
+      }
+    }
+    FIX_KO_PHRASES.sort(function(a,b){ return b.n.length - a.n.length; });
+    FIX_HSPLIT.sort(function(a,b){ return b.n.length - a.n.length; });
+    FIX_LSPLIT.sort(function(a,b){ return b.n.length - a.n.length; });
+  })();
+
+  /* 숫자·영문·한글 경계에 띄어쓰기 넣기: 아이폰15프로 → 아이폰 15 프로 */
+  function fxClass(c){
+    if(/\s/.test(c)){ return 'space'; }
+    if(/[0-9]/.test(c)){ return 'digit'; }
+    if(/[a-z]/i.test(c)){ return 'latin'; }
+    if(/[가-힣]/.test(c)){ return 'hangul'; }
+    return 'other';
+  }
+  function fxScriptSpaced(s){
+    var src = String(s || '');
+    var out = '';
+    var prev = '';
+    var NO_SPACE_AFTER_DIGIT = '세인형년개만월회';
+    for(var i=0;i<src.length;i++){
+      var c = src.charAt(i);
+      var cls = fxClass(c);
+      if(prev && cls !== 'space' && prev !== 'space' && cls !== prev){
+        var join = (prev === 'digit' && cls === 'hangul' && NO_SPACE_AFTER_DIGIT.indexOf(c) >= 0);
+        if(!join && cls !== 'other' && prev !== 'other'){ out += ' '; }
+      }
+      out += c;
+      prev = cls;
+    }
+    return out.replace(/\s+/g, ' ').trim();
+  }
+
+  /* 한글 오타·영문 표기 사전 치환 (문자열 안에서도 찾아 바꿉니다) */
+  function fxPhrasePass(s){
+    var out = String(s || '');
+    var keyAll = fxKey(out);
+    if(!keyAll){ return { text: out, hit: false }; }
+    var direct = FIX_ALIAS[keyAll];
+    if(direct && direct.k === fxText(out)){ return { text: out, hit: false }; }
+    var hit = false;
+    if(direct){
+      out = direct.k;
+      hit = (out !== s);
+    }
+    for(var i=0;i<FIX_KO_PHRASES.length;i++){
+      var p = FIX_KO_PHRASES[i];
+      if(fxKey(out).indexOf(p.n) < 0){ continue; }
+      var before = out;
+      out = out.replace(p.re, p.k);
+      if(out !== before){ hit = true; }
+    }
+    return { text: out, hit: hit };
+  }
+
+  /* 붙여 쓴 영문 복합어: ipadpro → ipad pro */
+  function fxLatinSplit(tok){
+    if(!/^[a-z0-9]+$/i.test(tok) || tok.length < 4){ return tok; }
+    var low = tok.toLowerCase();
+    for(var i=0;i<FIX_LSPLIT.length;i++){
+      var c = FIX_LSPLIT[i];
+      if(c.n.length < 3 || low.length <= c.n.length){ continue; }
+      if(low.indexOf(c.n) !== 0){ continue; }
+      var rest = low.slice(c.n.length);
+      if(FIX_LATIN_MODS[rest]){ return tok.slice(0, c.n.length) + ' ' + tok.slice(c.n.length); }
+    }
+    return tok;
+  }
+
+  /* 붙여 쓴 한글 복합어: 스토케트립트랩 → 스토케 트립트랩 */
+  function fxHangulSplit(tok){
+    if(!/^[가-힣]+$/.test(tok)){ return tok; }
+    for(var i=0;i<FIX_HSPLIT.length;i++){
+      var c = FIX_HSPLIT[i];
+      if(tok.length <= c.n.length){ continue; }
+      if(tok.indexOf(c.n) !== 0){ continue; }
+      var rest = tok.slice(c.n.length);
+      if(FIX_HANGUL_MODS[rest] || FIX_ALIAS[fxKey(rest)] || fxCorrectToken(rest).text !== rest){
+        return c.k + ' ' + rest;
+      }
+    }
+    return tok;
+  }
+
+  /* 한 토막(띄어쓰기 단위) 교정: 사전에 있으면 그대로, 없으면 자모 유사도 */
+  function fxCorrectToken(tok){
+    var raw = String(tok || '');
+    var key = fxKey(raw);
+    if(!key){ return { text: raw, kind:'none', conf:'none' }; }
+    var hit = FIX_ALIAS[key];
+    if(hit){
+      var same = (hit.k === raw);
+      var kind = same ? 'none' : (hit.kind && hit.kind !== 'none' ? hit.kind : 'spacing');
+      return { text: hit.k, kind: kind, conf: same ? 'none' : 'high' };
+    }
+    if(key.length < 3){ return { text: raw, kind:'none', conf:'none' }; }
+    var best = null;
+    for(var i=0;i<FIX_FUZZY.length;i++){
+      var f = FIX_FUZZY[i];
+      if(Math.abs(f.n.length - key.length) > 2){ continue; }
+      var d = (f.n === key) ? 0 : fxLev(fxJamo(key), fxJamo(f.n));
+      if(d > 2){ continue; }
+      if(!best || d < best.d || (d === best.d && f.n.length > best.n.length)){
+        best = { k:f.k, n:f.n, d:d };
+      }
+    }
+    if(!best){ return { text: raw, kind:'none', conf:'none' }; }
+    if(best.d === 0){ return { text: best.k, kind:'spacing', conf:'high' }; }
+    if(best.d <= 1){ return { text: best.k, kind:'typo', conf:'high' }; }
+    if(best.n.length >= 4 && (best.d / (best.n.length * 2.5)) <= 0.24){
+      return { text: best.k, kind:'typo', conf:'mid' };
+    }
+    return { text: raw, kind:'none', conf:'none' };
+  }
+
+  /* 검색어 전체 교정 */
+  function fxFixText(s){
+    var orig = String(s || '').replace(/\s+/g, ' ').trim();
+    if(!orig){ return { text:'', kind:'none', conf:'none' }; }
+    var work = orig;
+    var kinds = [];
+    var conf = 'none';
+
+    var ph = fxPhrasePass(work);
+    if(ph.hit && ph.text !== work){ work = ph.text; kinds.push('typo'); conf = 'high'; }
+
+    var sp = fxScriptSpaced(work);
+    if(sp !== work){ work = sp; kinds.push('spacing'); if(conf === 'none'){ conf = 'high'; } }
+
+    var toks = work.split(' ');
+    var out = [];
+    var split = false;
+    for(var i=0;i<toks.length;i++){
+      var t = fxHangulSplit(fxLatinSplit(toks[i]));
+      if(t !== toks[i]){ split = true; }
+      out.push(t);
+    }
+    work = out.join(' ');
+    if(split){ kinds.push('spacing'); if(conf === 'none'){ conf = 'high'; } }
+
+    toks = work.split(' ');
+    out = [];
+    for(var j=0;j<toks.length;j++){
+      var tc = fxCorrectToken(toks[j]);
+      if(tc.text !== toks[j]){
+        if(tc.kind && tc.kind !== 'none'){ kinds.push(tc.kind); }
+        if(tc.conf === 'high'){ conf = 'high'; }
+        else if(tc.conf === 'mid' && conf !== 'high'){ conf = 'mid'; }
+      }
+      out.push(tc.text);
+    }
+    work = out.join(' ').replace(/\s+/g, ' ').trim();
+
+    var kind = 'none';
+    if(kinds.indexOf('typo') >= 0){ kind = 'typo'; }
+    else if(kinds.indexOf('english') >= 0){ kind = 'english'; }
+    else if(kinds.indexOf('spacing') >= 0){ kind = 'spacing'; }
+    if(work === orig){ kind = 'none'; conf = 'none'; }
+    return { text: work, kind: kind, conf: conf };
+  }
+
+  /* '삽니다 · 구해요' 같은 검색에 필요 없는 말은 덜어냅니다. */
+  function fxCleanQuery(s){
+    var t = String(s || '').replace(/\s+/g, ' ').trim();
+    t = t.replace(/^(중고|미개봉|새상품)\s+/g, '');
+    t = t.replace(/(\s*(삽니다|구합니다|구해요|사요|사고싶어요|팝니다|팔아요|판매합니다|판매해요|급처|급매))+$/g, '');
+    return t.trim();
+  }
+
+  /* 비슷한 검색어 추천 */
+  function fxSuggestions(res){
+    var out = [];
+    var seen = {};
+    var used = fxKey(res.corrected || res.clean || res.input);
+    function add(q){
+      var k = fxKey(q);
+      if(!k || k === used || seen[k]){ return; }
+      seen[k] = 1;
+      out.push({ q:q, label:q });
+    }
+    var g = '', glen = 0;
+    for(var i=0;i<FIX_WORDS.length;i++){
+      var w = FIX_WORDS[i];
+      if(!w.g){ continue; }
+      var wn = fxKey(w.k);
+      if(!wn || wn.length <= glen){ continue; }
+      if(used.indexOf(wn) >= 0){ g = w.g; glen = wn.length; }
+    }
+    if(g && FIX_GROUPS[g]){
+      for(var j=0;j<FIX_GROUPS[g].length;j++){ add(FIX_GROUPS[g][j]); }
+    }
+    var near = [];
+    for(var m=0;m<FIX_FUZZY.length;m++){
+      var f = FIX_FUZZY[m];
+      if(!f.n || f.n === used){ continue; }
+      if(used.indexOf(f.n) === 0 || f.n.indexOf(used) === 0){ near.push({ k:f.k, d:1 }); continue; }
+      var d = fxLev(fxJamo(used), fxJamo(f.n));
+      if(d / Math.max(used.length * 2.5, 1) <= 0.42){ near.push({ k:f.k, d:d }); }
+    }
+    near.sort(function(a,b){ return a.d - b.d; });
+    for(var n=0;n<near.length && out.length<5;n++){ add(near[n].k); }
+    if(!out.length){
+      for(var p=0;p<FIX_POPULAR.length && out.length<3;p++){ add(FIX_POPULAR[p]); }
+    }
+    return out.slice(0, 5);
+  }
+
+  function fxAnalyze(raw){
+    var input = String(raw || '').replace(/\s+/g, ' ').trim();
+    var cleaned = fxCleanQuery(input);
+    var res = {
+      input: input,
+      clean: cleaned,
+      corrected: cleaned,
+      kind: 'none',
+      confidence: 'none',
+      variants: [],
+      suggestions: []
+    };
+    if(!cleaned){ return res; }
+
+    var fixed = fxFixText(cleaned);
+    res.corrected = fixed.text || cleaned;
+    res.kind = fixed.kind;
+    res.confidence = fixed.conf;
+    if(fxText(cleaned) !== fxText(input)){
+      if(res.confidence === 'none'){ res.confidence = 'high'; }
+      if(res.kind === 'none'){ res.kind = 'clean'; }
+    }
+    if(fxText(res.corrected) !== fxText(cleaned)){
+      res.variants.push(cleaned);
+    }
+    res.suggestions = fxSuggestions(res);
+    return res;
+  }
+
+  function fxMakeFix(raw, shown, an, fallback, literal){
+    var changed = (fxText(raw) !== fxText(shown));
+    var note = '';
+    if(changed){
+      if(fallback){
+        note = '‘' + raw + '’로는 결과가 적어서 검색어를 바꿔 다시 찾아봤어요.';
+      }else if(an && an.kind === 'english'){
+        note = '영문 이름을 한글 검색어로 바꿔서 찾았어요.';
+      }else if(an && an.kind === 'typo'){
+        note = '오타를 자동으로 고쳐서 찾았어요.';
+      }else if(an && an.kind === 'clean'){
+        note = '검색에 필요 없는 말을 빼고 찾았어요.';
+      }else{
+        note = '띄어쓰기를 고쳐서 찾았어요.';
+      }
+    }
+    return {
+      original: raw,
+      shown: shown,
+      changed: changed,
+      literal: !!literal,
+      usedCorrection: !fallback,
+      note: note,
+      showSug: false,
+      corrected: (an && an.corrected) || '',
+      suggestions: (an && an.suggestions) || []
+    };
+  }
+
+  /* 어떤 검색어를 어떤 순서로 시도할지 */
+  function fxBuildPlan(raw, an, literal){
+    var plan = [];
+    var seen = {};
+    function add(q, role){
+      q = String(q || '').replace(/\s+/g, ' ').trim();
+      var k = fxKey(q);
+      if(!k || seen[k]){ return; }
+      seen[k] = 1;
+      plan.push({ q:q, role:role });
+    }
+    if(literal){ add(raw, 'literal'); return plan; }
+    var fixedDiffers = an.corrected && fxText(an.corrected) !== fxText(an.input);
+    if(fixedDiffers && an.confidence === 'high'){ add(an.corrected, 'corrected'); }
+    add(an.clean, 'original');
+    if(fixedDiffers){ add(an.corrected, 'corrected'); }
+    for(var i=0;i<an.variants.length;i++){ add(an.variants[i], 'variant'); }
+    return plan.slice(0, 3);
+  }
+
+  function fxChipsHtml(fix, label){
+    if(!fix || !fix.suggestions || !fix.suggestions.length){ return ''; }
+    var html = '<div class="fix-sug">';
+    if(label){ html += '<span class="fix-sug-label">' + esc(label) + '</span>'; }
+    html += '<div class="fix-chips">';
+    for(var i=0;i<fix.suggestions.length;i++){
+      var s = fix.suggestions[i];
+      html += '<button class="fix-chip" type="button" data-action="fix-apply" data-q="' + esc(s.q) + '">' + esc(s.label) + '</button>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function fxBadgeHtml(fix){
+    if(!fix){ return ''; }
+    if(fix.changed){
+      var html = '<div class="fix-badge">';
+      html += '<div class="fb-top"><span class="fb-ico" aria-hidden="true">✨</span>';
+      html += '<div class="fb-body"><b>‘' + esc(fix.original) + '’ 대신 ‘' + esc(fix.shown) + '’로 찾아봤어요</b>';
+      html += '<span>' + esc(fix.note) + '</span></div></div>';
+      html += '<div class="fb-row">';
+      html += '<button class="fb-btn" type="button" data-action="fix-literal" data-q="' + esc(fix.original) + '">원래 검색어로 보기</button>';
+      if(fix.corrected && fxText(fix.corrected) !== fxText(fix.shown)){
+        html += '<button class="fb-btn" type="button" data-action="fix-apply" data-q="' + esc(fix.corrected) + '">‘' + esc(fix.corrected) + '’로 다시 찾기</button>';
+      }
+      html += '</div>';
+      html += fxChipsHtml(fix, '이런 검색어는 어때요?');
+      html += '</div>';
+      return html;
+    }
+    if(fix.literal && fix.corrected && fxText(fix.corrected) !== fxText(fix.shown)){
+      var lhtml = '<div class="fix-badge">';
+      lhtml += '<div class="fb-top"><span class="fb-ico" aria-hidden="true">🪄</span>';
+      lhtml += '<div class="fb-body"><b>‘' + esc(fix.shown) + '’ 그대로 찾아봤어요</b>';
+      lhtml += '<span>고쳐서 찾는 편이 결과가 더 많을 수 있어요.</span></div></div>';
+      lhtml += '<div class="fb-row"><button class="fb-btn" type="button" data-action="fix-apply" data-q="' + esc(fix.corrected) + '">‘' + esc(fix.corrected) + '’로 찾기</button></div>';
+      lhtml += fxChipsHtml(fix, '이런 검색어는 어때요?');
+      lhtml += '</div>';
+      return lhtml;
+    }
+    if(fix.suggestions && fix.suggestions.length && fix.showSug){
+      return '<div class="fix-solo">' + fxChipsHtml(fix, '이런 검색어는 어때요?') + '</div>';
+    }
+    return '';
+  }
+
+  function fxEmptyHtml(fix, fallbackQ){
+    var q = (fix && fix.original) || fallbackQ || '';
+    var html = '<div class="fix-badge">';
+    html += '<div class="fb-top"><span class="fb-ico" aria-hidden="true">🔍</span>';
+    html += '<div class="fb-body"><b>‘' + esc(q) + '’에 대한 매물이 적어요.</b>';
+    html += '<span>이런 검색어는 어때요?</span></div></div>';
+    html += fxChipsHtml({ suggestions: (fix && fix.suggestions) || [] }, '');
+    html += '<div class="fb-row"><button class="fb-btn" type="button" data-action="fix-literal" data-q="' + esc(q) + '">원래 검색어로 다시 찾기</button></div>';
+    html += '</div>';
+    return html;
+  }
+
   /* ================= 시세 조회 ================= */
   var currentPrice = null;
   var dealMode = 'buy';
@@ -1603,7 +2153,7 @@
       + '</div></div>';
   }
 
-  function renderPrice(d, query){
+  function renderPrice(d, query, fix){
     var q = String(query || d.name || '').trim();
     var qShort = q.length > 18 ? q.slice(0, 18) + '…' : q;
     var discount = Math.round((1 - d.avg / d.newPrice) * 100);
@@ -1614,6 +2164,7 @@
 
     var html = '';
     html += '<div class="card result">';
+    html += fxBadgeHtml(fix);
     html += '<div class="demo-note" style="margin:0 0 13px;"><b>참고용 샘플 예시예요.</b> 미리 넣어둔 예시값이라 실제 당근 매물 가격과 다를 수 있어요. 위 <b>‘실제 매물 가격으로 계산’</b>에 당근에서 본 가격을 넣으면 실물 기준으로 계산해 드려요.</div>';
     html += '<div class="res-head">';
     html += '<div class="res-emoji">' + d.emoji + '</div>';
@@ -1726,11 +2277,12 @@
     return html;
   }
 
-  function renderLivePrice(d, q){
+  function renderLivePrice(d, q, fix){
     var s = d.stats;
     var dropped = (d.freeCount || 0) + (d.outlierCount || 0) + (d.accessoryCount || 0);
     var html = '';
     html += '<div class="card result">';
+    html += fxBadgeHtml(fix);
     html += '<div class="demo-note ok" style="margin:0 0 13px;"><b>방금 당근에 올라온 매물 ' + fmt(d.matchedCount || s.count) + '건을 읽었어요.</b>'
       + (dropped > 0 ? ' 케이스·부품·무료나눔·이상값 ' + fmt(dropped) + '건을 빼고 ' + fmt(s.count) + '건으로 계산했어요.' : ' ' + fmt(s.count) + '건으로 계산했어요.')
       + '</div>';
@@ -1795,11 +2347,16 @@
     return html;
   }
 
-  function renderLiveEmpty(d, q){
+  function renderLiveEmpty(d, q, fix){
     var notes = (d && d.notes) || [];
     var first = notes.length ? notes[0] : '당근에서 이 상품의 매물을 찾지 못했어요.';
     var html = '';
     html += '<div class="card result">';
+    if(fix && fix.suggestions && fix.suggestions.length){
+      html += fxEmptyHtml(fix, q);
+    }else{
+      html += fxBadgeHtml(fix);
+    }
     html += '<div class="res-head">';
     html += '<div class="res-emoji">🔍</div>';
     html += '<div style="min-width:0"><b>' + esc(q) + '</b><span class="sub">당근마켓 실시간 검색</span></div>';
@@ -1818,11 +2375,12 @@
     return html;
   }
 
-  function renderLiveError(err, q){
+  function renderLiveError(err, q, fix){
     var msg = (err && err.message) ? err.message : '실시간 시세를 가져오지 못했어요.';
     var links = { daangn: daangnSearchUrl(q), naver: 'https://search.shopping.naver.com/search/all?query=' + encodeURIComponent(q), joongna: 'https://web.joongna.com/search/' + encodeURIComponent(q) };
     var html = '';
     html += '<div class="card result">';
+    html += (fix && fix.changed) ? fxBadgeHtml(fix) : '';
     html += '<div class="res-head">';
     html += '<div class="res-emoji">📡</div>';
     html += '<div style="min-width:0"><b>' + esc(q) + '</b><span class="sub">실시간 시세 연결</span></div>';
@@ -1847,21 +2405,27 @@
     if(!opts || opts.scroll !== false){ box.scrollIntoView({ behavior:'smooth', block:'start' }); }
 
     var btn = $('priceSubmit');
+    var literal = !!(opts && opts.literal);
+    var an = fxAnalyze(q);
 
     /* 참고용 샘플 카드를 일부러 볼 때는 서버를 부르지 않아요 */
     if(opts && opts.sample){
-      currentPrice = matchPrice(q);
-      box.innerHTML = renderPrice(currentPrice, q);
+      var sampleQ = (!literal && an.confidence === 'high') ? an.corrected : q;
+      currentPrice = matchPrice(sampleQ);
+      box.innerHTML = renderPrice(currentPrice, sampleQ, fxMakeFix(q, sampleQ, an, false, literal));
       return;
     }
 
+    var plan = fxBuildPlan(q, an, literal);
     var base = getWorkerUrl();
     if(!base){
-      currentPrice = matchPrice(q);
+      var lq = plan[0].q;
+      currentPrice = matchPrice(lq);
+      var lfix = fxMakeFix(q, lq, an, false, literal);
       box.innerHTML = skeletonPrice();
       if(btn){ btn.disabled = true; }
       setTimeout(function(){
-        box.innerHTML = renderPrice(currentPrice, q);
+        box.innerHTML = renderPrice(currentPrice, lq, lfix);
         if(btn){ btn.disabled = false; }
       }, 550);
       return;
@@ -1870,26 +2434,60 @@
     currentPrice = null;
     box.innerHTML = liveSkeleton();
     if(btn){ btn.disabled = true; }
-    fetchJson(base + '/?action=price&q=' + encodeURIComponent(q), 22000).then(function(d){
+
+    var best = null;
+    var i = 0;
+
+    function finish(){
       if(btn){ btn.disabled = false; }
-      if(d && d.status === 'ok' && d.stats){
+      if(!best){ return; }
+      var shown = best.q;
+      var fallback = false;
+      if(best.role === 'variant'){ fallback = true; }
+      else if(plan.length > 1 && plan[0].role !== best.role){ fallback = true; }
+      var fix = fxMakeFix(q, shown, an, fallback, literal);
+      fix.showSug = (fix.changed || best.count < 5);
+      if(best.d && best.d.status === 'ok' && best.d.stats){
         currentPrice = {
-          name: q,
-          avg: d.stats.avg,
-          median: d.stats.median,
-          low: d.stats.min,
-          high: d.stats.max,
-          buyRange: [d.stats.honey, d.stats.median],
-          sellRange: [d.stats.median, d.stats.p75]
+          name: shown,
+          avg: best.d.stats.avg,
+          median: best.d.stats.median,
+          low: best.d.stats.min,
+          high: best.d.stats.max,
+          buyRange: [best.d.stats.honey, best.d.stats.median],
+          sellRange: [best.d.stats.median, best.d.stats.p75]
         };
-        box.innerHTML = renderLivePrice(d, q);
+        box.innerHTML = renderLivePrice(best.d, shown, fix);
       }else{
-        box.innerHTML = renderLiveEmpty(d, q);
+        box.innerHTML = renderLiveEmpty(best.d, shown, fix);
       }
-    }).catch(function(err){
-      if(btn){ btn.disabled = false; }
-      box.innerHTML = renderLiveError(err, q);
-    });
+      /* 검색어칸도 실제로 찾은 검색어로 맞춰 둡니다. */
+      var pi = $('priceInput');
+      if(pi && fxText(pi.value) !== fxText(shown)){
+        pi.value = shown;
+        var clr = $('priceClear');
+        if(clr){ clr.classList.toggle('on', shown.length > 0); }
+      }
+    }
+
+    function step(){
+      if(i >= plan.length){ finish(); return; }
+      var c = plan[i];
+      i++;
+      fetchJson(base + '/?action=price&q=' + encodeURIComponent(c.q), 22000).then(function(d){
+        var got = (d && d.status === 'ok' && d.stats) ? Number(d.stats.count || 0) : 0;
+        var cand = { q:c.q, role:c.role, d:d, count:got };
+        if(!best || cand.count > best.count){ best = cand; }
+        if(got >= 3){ finish(); return; }
+        step();
+      }).catch(function(err){
+        if(best){ finish(); return; }
+        if(btn){ btn.disabled = false; }
+        box.innerHTML = renderLiveError(err, c.q, fxMakeFix(q, c.q, an, i > 1, literal));
+      });
+    }
+
+    step();
   }
 
   function recordDeal(){
@@ -2656,6 +3254,15 @@
     var nameEl = $('alName');
     var name = normName(nameEl ? nameEl.value : '');
     if(!name){ toast('알림 걸 물건 이름을 적어주세요'); if(nameEl){ nameEl.focus(); } return; }
+
+    /* 검색어 오타·띄어쓰기가 있으면 알림 이름도 바로잡아 둡니다. */
+    var correctedFrom = '';
+    var nameFix = fxAnalyze(name);
+    if(nameFix.confidence === 'high' && fxText(nameFix.corrected) !== fxText(name)){
+      correctedFrom = name;
+      name = nameFix.corrected;
+    }
+
     if(alerts.length >= MAX_ALERTS){ toast('알림은 ' + MAX_ALERTS + '개까지 등록할 수 있어요'); return; }
 
     var mode = 'pct';
@@ -2694,7 +3301,8 @@
     if(clr){ clr.classList.remove('on'); }
     if($('alCustom')){ $('alCustom').value = ''; }
     setThr('30');
-    toast('🔔 ‘' + (name.length > 12 ? name.slice(0, 12) + '…' : name) + '’ 알림을 등록했어요');
+    toast('🔔 ‘' + (name.length > 12 ? name.slice(0, 12) + '…' : name) + '’ 알림을 등록했어요'
+      + (correctedFrom ? ' (‘' + (correctedFrom.length > 10 ? correctedFrom.slice(0, 10) + '…' : correctedFrom) + '’에서 고쳐서)' : ''));
   }
 
   /* ================= 사진 글자 인식(OCR) =================
@@ -3262,6 +3870,30 @@
       return;
     }
 
+    /* 검색어 보정 — 추천/보정된 검색어로 다시 찾기 */
+    if(action === 'fix-apply'){
+      var fq = el.getAttribute('data-q') || '';
+      if(!fq){ return; }
+      var fIn = $('priceInput');
+      if(fIn){ fIn.value = fq; }
+      var fClr = $('priceClear');
+      if(fClr){ fClr.classList.toggle('on', fq.length > 0); }
+      runPriceQuery(fq);
+      return;
+    }
+
+    /* 검색어 보정 — 원래 입력한 그대로 찾기 */
+    if(action === 'fix-literal'){
+      var lq = el.getAttribute('data-q') || '';
+      if(!lq){ return; }
+      var lIn = $('priceInput');
+      if(lIn){ lIn.value = lq; }
+      var lClr = $('priceClear');
+      if(lClr){ lClr.classList.toggle('on', lq.length > 0); }
+      runPriceQuery(lq, { literal:true, scroll:false });
+      return;
+    }
+
     if(action === 'sample-here'){
       runPriceQuery(el.getAttribute('data-q') || $('priceInput').value, { sample:true });
       return;
@@ -3528,6 +4160,9 @@
   setThr(alertThr);
   renderLivePrices();
   updateConnUi();
+
+  /* 검색어 보정 규칙을 밖에서 확인해 볼 수 있게 열어 둡니다(콘솔 점검용). */
+  window.salkkaFixQuery = fxAnalyze;
 
   var wInput = $('workerUrl');
   if(wInput){

@@ -4,8 +4,9 @@
     아래 fetch 핸들러가 same-origin만 다루어 CDN 요청은 건드리지 않습니다.)
    (v3: 실시간 시세·알바 링크 서버 연결. Worker는 다른 주소라 캐시하지 않습니다.)
    (v4: 알바 링크 칸에 제목·설명이 섞여 있어도 URL만 골라 읽고,
-    공식 플랫폼 공고의 전화번호 미기재를 감점하지 않도록 판정 기준을 조정했습니다.) */
-var CACHE = 'salkka-malkka-v4';
+    공식 플랫폼 공고의 전화번호 미기재를 감점하지 않도록 판정 기준을 조정했습니다.)
+   (v5: 검색어 오타·띄어쓰기 자동 보정과 유사어 재검색을 추가했습니다. Worker는 그대로입니다.) */
+var CACHE = 'salkka-malkka-v5';
 var ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png'];
 
 self.addEventListener('install', function(e){
