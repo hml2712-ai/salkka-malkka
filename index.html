@@ -1712,7 +1712,9 @@
         var kind = (/[가-힣]/.test(w.k) && !/[가-힣]/.test(al)) ? 'english' : 'typo';
         if(!FIX_ALIAS[an]){ FIX_ALIAS[an] = { k:w.k, g:w.g || '', kind:kind }; }
         if(/[가-힣]/.test(al)){
-          FIX_KO_PHRASES.push({ k:w.k, n:an, re:fxRegexOf(al) });
+          /* 바른 표기 안에 들어 있는 토막(예: '갤럭' → '갤럭시')은
+             글자를 덧붙여 '갤럭시시'처럼 망가뜨리므로 문자열 치환에서는 뺍니다. */
+          if(kn.indexOf(an) < 0){ FIX_KO_PHRASES.push({ k:w.k, n:an, re:fxRegexOf(al) }); }
         }else if(w.g){
           FIX_LSPLIT.push({ k:w.k, n:an });
         }
@@ -1736,11 +1738,16 @@
     var out = '';
     var prev = '';
     var NO_SPACE_AFTER_DIGIT = '세인형년개만월회';
+    var UNITS = { g:1, gb:1, tb:1, mb:1, kb:1, kg:1, ml:1, cm:1, mm:1, inch:1, hz:1, ghz:1, m:1, l:1, w:1, k:1 };
     for(var i=0;i<src.length;i++){
       var c = src.charAt(i);
       var cls = fxClass(c);
       if(prev && cls !== 'space' && prev !== 'space' && cls !== prev){
         var join = (prev === 'digit' && cls === 'hangul' && NO_SPACE_AFTER_DIGIT.indexOf(c) >= 0);
+        if(prev === 'digit' && cls === 'latin'){
+          var run = (/^[A-Za-z]+/.exec(src.slice(i)) || [''])[0].toLowerCase();
+          if(UNITS[run]){ join = true; }
+        }
         if(!join && cls !== 'other' && prev !== 'other'){ out += ' '; }
       }
       out += c;
@@ -1753,13 +1760,15 @@
   function fxPhrasePass(s){
     var out = String(s || '');
     var keyAll = fxKey(out);
-    if(!keyAll){ return { text: out, hit: false }; }
+    if(!keyAll){ return { text: out, hit: false, kind: 'typo' }; }
     var direct = FIX_ALIAS[keyAll];
-    if(direct && direct.k === fxText(out)){ return { text: out, hit: false }; }
+    if(direct && direct.k === fxText(out)){ return { text: out, hit: false, kind: 'typo' }; }
     var hit = false;
+    var kind = 'typo';
     if(direct){
       out = direct.k;
       hit = (out !== s);
+      if(direct.kind === 'english'){ kind = 'english'; }
     }
     for(var i=0;i<FIX_KO_PHRASES.length;i++){
       var p = FIX_KO_PHRASES[i];
@@ -1768,7 +1777,7 @@
       out = out.replace(p.re, p.k);
       if(out !== before){ hit = true; }
     }
-    return { text: out, hit: hit };
+    return { text: out, hit: hit, kind: kind };
   }
 
   /* 붙여 쓴 영문 복합어: ipadpro → ipad pro */
@@ -1840,7 +1849,12 @@
     var conf = 'none';
 
     var ph = fxPhrasePass(work);
-    if(ph.hit && ph.text !== work){ work = ph.text; kinds.push('typo'); conf = 'high'; }
+    if(ph.hit && ph.text !== work){
+      var phKind = (fxKey(ph.text) === fxKey(work)) ? 'spacing' : (ph.kind === 'english' ? 'english' : 'typo');
+      work = ph.text;
+      kinds.push(phKind);
+      conf = 'high';
+    }
 
     var sp = fxScriptSpaced(work);
     if(sp !== work){ work = sp; kinds.push('spacing'); if(conf === 'none'){ conf = 'high'; } }
@@ -1913,7 +1927,7 @@
       if(!f.n || f.n === used){ continue; }
       if(used.indexOf(f.n) === 0 || f.n.indexOf(used) === 0){ near.push({ k:f.k, d:1 }); continue; }
       var d = fxLev(fxJamo(used), fxJamo(f.n));
-      if(d / Math.max(used.length * 2.5, 1) <= 0.42){ near.push({ k:f.k, d:d }); }
+      if(d / Math.max(used.length * 2.5, 1) <= 0.3){ near.push({ k:f.k, d:d }); }
     }
     near.sort(function(a,b){ return a.d - b.d; });
     for(var n=0;n<near.length && out.length<5;n++){ add(near[n].k); }
