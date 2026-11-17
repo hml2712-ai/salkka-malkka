@@ -2069,7 +2069,12 @@
     html += '<div class="fb-body"><b>‘' + esc(q) + '’에 대한 매물이 적어요.</b>';
     html += '<span>이런 검색어는 어때요?</span></div></div>';
     html += fxChipsHtml({ suggestions: (fix && fix.suggestions) || [] }, '');
-    html += '<div class="fb-row"><button class="fb-btn" type="button" data-action="fix-literal" data-q="' + esc(q) + '">원래 검색어로 다시 찾기</button></div>';
+    var alt = (fix && fix.corrected) ? fix.corrected : '';
+    if(alt && fxText(alt) !== fxText(fix.shown)){
+      html += '<div class="fb-row"><button class="fb-btn" type="button" data-action="fix-apply" data-q="' + esc(alt) + '">‘' + esc(alt) + '’로 다시 찾기</button></div>';
+    }else if(fix && fix.changed){
+      html += '<div class="fb-row"><button class="fb-btn" type="button" data-action="fix-literal" data-q="' + esc(q) + '">원래 검색어로 다시 찾기</button></div>';
+    }
     html += '</div>';
     return html;
   }
